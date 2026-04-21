@@ -1,0 +1,344 @@
+{% load static shop_filters %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}HANI Shopping - Thời Trang Nữ{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=1.3">
+</head>
+<body>
+    <header class="header">
+        <div class="header-top">
+            <div class="header-left">
+                <a href="{% url 'home' %}" class="logo-hani">
+                    <img src="{% static 'images/logo.png' %}" alt="Hani Logo" class="logo-img">
+                </a>
+            </div>
+            <div class="header-right">
+                <form action="{% url 'search' %}" method="GET" class="search-bar">
+                    <input type="text" name="q" placeholder="Tìm sản phẩm...">
+                    <button type="submit" class="btn-search"><i class="fas fa-search"></i></button>
+                </form>
+                <button class="btn-cart-icon" onclick="openCart()">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="cart-badge {% if cart_count > 0 %}show{% endif %}" id="cart-badge">{{ cart_count }}</span>
+                </button>
+                {% if user.is_authenticated %}
+                <div class="user-area" style="position: relative; display: flex; align-items: center;">
+                    <div id="userMenuToggle" style="cursor: pointer; display: flex; align-items: center; gap: 8px; padding: 5px 0;">
+                        <i class="fas fa-user-circle" style="font-size: 26px; color: #757575;"></i>
+                        <span class="username-display" style="font-weight: 500; font-size: 15px; color: #333;">{{ user.username }}</span>
+                        <i class="fas fa-chevron-down" style="font-size: 11px; margin-left: 2px; color: #555;"></i>
+                    </div>
+                    {% if user.is_staff %}
+                        <a href="/admin/" target="_blank" style="margin-left:10px; color:var(--green);" title="Quản trị"><i class="fas fa-user-shield"></i></a>
+                    {% endif %}
+                    
+                    <div id="userMenuDropdown" style="display: none; position: absolute; right: 0; top: 100%; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 4px; min-width: 220px; padding: 8px 0; z-index: 1000; margin-top: 5px;">
+                        <a href="{% url 'profile' %}" style="display: flex; align-items: center; padding: 12px 20px; color: #333; text-decoration: none; font-size: 15px; font-weight: 500;">
+                            <i class="fas fa-user-circle" style="margin-right: 12px; font-size: 18px; color: #666; width: 20px; text-align: center;"></i> Thông tin cá nhân
+                        </a>
+                        <div style="border-top: 1px solid #f0f0f0; margin: 4px 0;"></div>
+                        <a href="{% url 'logout' %}" style="display: flex; align-items: center; padding: 12px 20px; color: #e53935; text-decoration: none; font-size: 15px; font-weight: 500;">
+                            <i class="fas fa-sign-out-alt" style="margin-right: 12px; font-size: 18px; width: 20px; text-align: center;"></i> Đăng xuất
+                        </a>
+                    </div>
+                </div>
+                {% else %}
+                <div class="auth-area">
+                    <i class="fas fa-user-circle"></i>
+                    <span><a href="{% url 'login' %}">Đăng nhập</a> | <a href="{% url 'register' %}">Đăng ký</a></span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <nav class="nav-bar">
+            <span class="nav-item nav-highlight">HANI SHOPPING DAY</span>
+            <a href="{% url 'home' %}" class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">TRANG CHỦ</a>
+            <a href="{% url 'all_products_cat' 'san-pham-moi' %}" class="nav-item {% if category_slug == 'san-pham-moi' %}active{% endif %}">SẢN PHẨM MỚI</a>
+            <a href="{% url 'all_products_cat' 'bo-suu-tap' %}" class="nav-item {% if category_slug == 'bo-suu-tap' %}active{% endif %}">BỘ SƯU TẬP</a>
+            <a href="{% url 'all_products_cat' 'ao' %}" class="nav-item {% if category_slug == 'ao' %}active{% endif %}">ÁO</a>
+            <a href="{% url 'all_products_cat' 'quan' %}" class="nav-item {% if category_slug == 'quan' %}active{% endif %}">QUẦN</a>
+            <a href="{% url 'all_products_cat' 'vay' %}" class="nav-item {% if category_slug == 'vay' %}active{% endif %}">VÁY</a>
+        </nav>
+    </header>
+
+    <!-- TOASTS -->
+    <div class="toast-container" id="toast-container">
+        {% if messages %}
+            {% for message in messages %}
+            <div class="toast" style="border-left-color: var(--green);">
+                <span class="toast-text">{{ message }}</span>
+            </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- CART SIDEBAR -->
+    <div class="cart-overlay" id="cart-overlay" onclick="closeCart()"></div>
+    <div class="cart-sidebar" id="cart-sidebar">
+        <div class="cart-header">
+            <h3>Giỏ hàng (<span id="cart-count-sidebar">{{ cart_count }}</span>)</h3>
+            <button class="btn-close-cart" onclick="closeCart()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="cart-subheader">
+            <label class="custom-checkbox">
+                <input type="checkbox" id="select-all-cart" onchange="toggleSelectAll()">
+                <span class="checkmark"></span>
+                <span class="checkbox-text" style="font-weight:700;">Chọn tất cả</span>
+            </label>
+            <div class="cart-summary-top">
+                <span id="cart-selected-info">Bạn đã chọn 0 sản phẩm</span>
+                <button class="btn-edit-cart" id="btn-edit-cart" onclick="toggleCartEditMode()">Sửa</button>
+            </div>
+        </div>
+        <div class="cart-items" id="cart-items">
+            <!-- Items via JS -->
+        </div>
+        <div class="cart-suggestions-section">
+            <h3 class="suggestion-title">GỢI Ý CHO BẠN</h3>
+            <div id="suggestion-list"></div>
+        </div>
+        <div class="cart-bottom">
+            <div class="cart-coupon-container" style="border-bottom: 1px solid var(--gray-200);">
+                <div class="cart-coupon-row" 
+                     id="coupon-toggle-row"
+                     onclick="toggleCouponList()" 
+                     style="display:flex; justify-content:space-between; align-items:center; padding:16px; transition:var(--transition); background:var(--white);">
+                    <div class="coupon-left" style="display:flex; align-items:center; gap:10px;">
+                        <i class="fas fa-ticket-alt" style="color:var(--red);"></i>
+                        <span style="font-size:14px; font-weight:700;">Mã ưu đãi</span>
+                    </div>
+                    <div class="coupon-right" style="display:flex; align-items:center; gap:8px; color:var(--gray-500);">
+                        <span id="selected-coupon-label" style="font-size:13px; {% if request.session.applied_coupon %}color:var(--red); font-weight:700;{% endif %}">
+                            {{ request.session.applied_coupon|default:"Chọn hoặc nhập mã" }}
+                        </span>
+                        <i class="fas fa-chevron-right" id="coupon-arrow" style="font-size:12px; transition:var(--transition);"></i>
+                    </div>
+                </div>
+                <div id="cart-coupon-list" style="display:none; padding: 0 16px 16px; animation: fadeIn 0.3s ease;">
+                    {% for cp in COUPONS_LIST %}
+                    <div class="coupon-item-mini" 
+                         onclick="selectCoupon('{{ cp.code }}')"
+                         style="padding: 12px; border: 1px solid var(--gray-200); border-radius: 6px; margin-bottom: 8px; cursor: {% if cp.status == 'Đã kết thúc' %}not-allowed{% else %}pointer{% endif %}; position: relative; overflow: hidden; opacity: {% if cp.status == 'Đã kết thúc' %}0.6{% else %}1{% endif %};">
+                        <div style="display:flex; justify-content:space-between; margin-bottom: 4px;">
+                            <span style="font-weight:800; color:var(--dark); font-size:13px;">{{ cp.code }}</span>
+                            <span style="font-size:11px; font-weight:700; color:{% if cp.status_color == 'green' %}var(--green){% elif cp.status_color == 'red' %}var(--red){% else %}var(--gray-500){% endif %};">
+                                {{ cp.status }}
+                            </span>
+                        </div>
+                        <p style="font-size:11px; color:var(--gray-500); margin:0;">{{ cp.desc }} ({{ cp.discount }})</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <script>
+                function toggleCouponList() {
+                    // Kiểm tra xem có sản phẩm nào được CHỌN (checked) không
+                    const selectedInfo = document.getElementById('cart-selected-info');
+                    const selectedText = selectedInfo ? selectedInfo.textContent : '';
+                    const hasSelected = selectedText.includes('Bạn đã chọn 0 sản phẩm') === false;
+                    
+                    // Ưu tiên dùng biến global từ app.js nếu có
+                    const selectedCount = (typeof window.currentSelectedCount !== 'undefined') ? window.currentSelectedCount : (hasSelected ? 1 : 0);
+
+                    if (selectedCount === 0) {
+                        if (typeof showToast === 'function') {
+                            showToast('info', null, 'Vui lòng chọn ít nhất 1 sản phẩm để áp dụng mã!');
+                        } else {
+                            alert('Vui lòng chọn ít nhất 1 sản phẩm để áp dụng mã!');
+                        }
+                        return;
+                    }
+
+                    const list = document.getElementById('cart-coupon-list');
+                    const arrow = document.getElementById('coupon-arrow');
+                    if (list.style.display === 'none' || list.style.display === '') {
+                        list.style.display = 'block';
+                        arrow.style.transform = 'rotate(90deg)';
+                    } else {
+                        list.style.display = 'none';
+                        arrow.style.transform = 'rotate(0deg)';
+                    }
+                }
+                
+                function selectCoupon(code) {
+                    fetch("{% url 'apply_coupon' %}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrftoken
+                        },
+                        body: JSON.stringify({ code: code })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            document.getElementById('selected-coupon-label').innerText = code;
+                            document.getElementById('selected-coupon-label').style.color = 'var(--red)';
+                            document.getElementById('selected-coupon-label').style.fontWeight = '700';
+                            toggleCouponList();
+                            showToast('apply-coupon', { name: "Đã áp dụng mã: " + code });
+                        }
+                    });
+                }
+            </script>
+            <div class="cart-subtotal-row">
+                <span>Tạm tính</span>
+                <span class="subtotal-value" id="cart-total-price">0 đ</span>
+            </div>
+            <button class="btn-cart-checkout" onclick="location.href='{% url 'checkout' %}'">ĐẶT HÀNG</button>
+        </div>
+    </div>
+
+    <!-- CONTENT AREA -->
+    <main class="page-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-main">
+                <div class="footer-intro">
+                    <h4 class="footer-heading">HANI XIN CHÀO!</h4>
+                    <p class="footer-text">Chúng tôi luôn quý trọng và tiếp thu mọi ý kiến đóng góp từ khách hàng, nhằm không ngừng cải thiện và nâng tầm trải nghiệm dịch vụ cũng như chất lượng sản phẩm.</p>
+                </div>
+                <div class="footer-contacts">
+                    <div class="contact-col">
+                        <div class="contact-item">
+                            <i class="fas fa-phone-alt"></i>
+                            <div class="contact-text">
+                                <span class="contact-label">Đặt hàng</span>
+                                <span class="contact-num">039 427 6074</span>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-phone-alt"></i>
+                            <div class="contact-text">
+                                <span class="contact-label">Góp ý khiếu nại</span>
+                                <span class="contact-num">039 427 6074</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="contact-col">
+                        <div class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <div class="contact-text">
+                                <span class="contact-label">Email</span>
+                                <span class="contact-num">chamsockhachhanghani@gmail.com</span>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <div class="contact-text">
+                                <span class="contact-label">Địa chỉ</span>
+                                <span class="contact-num">90A Lê Duẩn, Hải Châu, Đà Nẵng</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-nav-and-social">
+                <div class="footer-nav-stack">
+                    <div class="footer-nav-row">VỀ HANI <i class="fas fa-chevron-right"></i></div>
+                    <div class="footer-nav-row">MUA SẮM <i class="fas fa-chevron-right"></i></div>
+                    <div class="footer-nav-row">TIN TỨC <i class="fas fa-chevron-right"></i></div>
+                    <div class="footer-nav-row">DỊCH VỤ KHÁCH HÀNG <i class="fas fa-chevron-right"></i></div>
+                </div>
+                <div class="footer-social-box">
+                    <span class="social-label">THEO DÕI CHÚNG TÔI</span>
+                    <div class="social-icons">
+                        <a href="#" class="social-btn zalo">Zalo</a>
+                        <a href="#" class="social-btn facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-btn messenger"><i class="fab fa-facebook-messenger"></i></a>
+                        <a href="#" class="social-btn instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-copyright">
+                <i class="far fa-copyright"></i> 2026 HANI.STUDIO
+            </div>
+        </div>
+    </footer>
+ <!-- Truncated for brevity, just copying structural parts -->
+
+    <script src="{% static 'js/app.js' %}?v=2.0"></script>
+    <script>
+        // Set CSRF token for AJAX
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken');
+
+        // KIỂM TRA PHIÊN TRÌNH DUYỆT (Heartbeat)
+        // Nếu người dùng đã login nhưng đây là tab/cửa sổ mới mà CHƯA có flag sessionStorage
+        // thì ta coi như đây là lần vào lại sau khi đóng trình duyệt.
+        (function() {
+            const isLoggedIn = "{{ user.is_authenticated }}" === "True";
+            if (isLoggedIn) {
+                if (!sessionStorage.getItem('hani_active_session')) {
+                    // Kiểm tra xem có phải vừa mới bấm nút Login xong không (qua cookie 30s)
+                    const justLoggedIn = getCookie('just_logged_in');
+                    if (!justLoggedIn) {
+                        // Đây là vào lại sau khi đóng browser -> Cưỡng bức Logout (không hiện thông báo)
+                        window.location.href = "{% url 'logout' %}?silent=1";
+                    } else {
+                        // Vừa login xong -> Đánh dấu phiên mới
+                        sessionStorage.setItem('hani_active_session', 'true');
+                    }
+                }
+            } else {
+                sessionStorage.removeItem('hani_active_session');
+            }
+        })();
+
+        // Ngăn chặn hiển thị trang cũ từ cache khi nhấn nút Back (đặc biệt là sau khi Login/Logout)
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted || (typeof window.performance != "undefined" && window.performance.navigation.type === 2)) {
+                // Nếu trang được load từ cache (nút Back), ta reload để đồng bộ trạng thái đăng nhập mới nhất từ server
+                window.location.reload();
+            }
+        });
+
+        // Setup User Dropdown Click Toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            var toggleBtn = document.getElementById('userMenuToggle');
+// ... (rest of the script)
+            var menuDrop = document.getElementById('userMenuDropdown');
+
+            if(toggleBtn && menuDrop) {
+                toggleBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    var isVisible = menuDrop.style.display === 'block';
+                    menuDrop.style.display = isVisible ? 'none' : 'block';
+                });
+
+                document.addEventListener('click', function(e) {
+                    if (!toggleBtn.contains(e.target) && !menuDrop.contains(e.target)) {
+                        menuDrop.style.display = 'none';
+                    }
+                });
+            }
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% load static shop_filters %}
+
+{% block title %}HANI Shopping - {{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'home' %}">Trang chủ</a> &gt; 
+    <span>{{ product.name }}</span>
+</div>
+
+<div class="product-detail-container">
+    <div class="product-gallery">
+        <div class="product-main-image">
+            <img src="{% static 'images/' %}{{ product.image }}" alt="{{ product.name }}" id="main-product-image">
+        </div>
+        <div class="product-thumbnails">
+            {% for color in product.colors %}
+            <div class="thumbnail {% if loop.first %}active{% endif %}" onclick="selectThumbnail(this)">
+                <img src="{% static 'images/' %}{{ product.image }}" alt="{{ color.name }}">
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="product-info-detail">
+        <h1 class="product-detail-name">{{ product.name }}</h1>
+        <p class="product-detail-code">Mã sản phẩm: {{ product.code }}</p>
+        <div class="product-price-detail">
+            <span class="old-price">{{ product.old_price|format_price }}</span>
+            <span class="current-price">{{ product.price|format_price }}</span>
+        </div>
+
+        <form id="add-to-cart-form">
+            {% csrf_token %}
+            <input type="hidden" name="product_id" value="{{ product.id }}">
+            <div class="product-colors">
+                <p class="option-label">Màu sắc:</p>
+                <div class="color-options">
+                    {% for color in product.colors %}
+                    <label class="color-option-wrapper">
+                        <input type="radio" name="color" value="{{ color.name }}" style="display:none;">
+                        <div class="color-option" 
+                             style="background:{{ color.hex }}" 
+                             title="{{ color.name }}"
+                             onclick="selectColor(this)"></div>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="product-sizes">
+                <p class="option-label">Kích thước:</p>
+                <div class="size-options">
+                    {% for size in product.sizes %}
+                    <label class="size-option-wrapper">
+                        <input type="radio" name="size" value="{{ size }}" style="display:none;">
+                        <div class="size-option" onclick="selectSize(this)">{{ size }}</div>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            <button type="button" class="btn-add-to-cart" onclick="submitAddToCart()">THÊM VÀO GIỎ HÀNG</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function selectThumbnail(el) {
+    document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+}
+
+function selectColor(el) {
+    document.querySelectorAll('.color-option').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    el.parentElement.querySelector('input').checked = true;
+}
+
+function selectSize(el) {
+    document.querySelectorAll('.size-option').forEach(s => s.classList.remove('selected'));
+    el.classList.add('selected');
+    el.parentElement.querySelector('input').checked = true;
+}
+
+function submitAddToCart() {
+    const form = document.getElementById('add-to-cart-form');
+    const color = form.querySelector('input[name="color"]:checked');
+    const size = form.querySelector('input[name="size"]:checked');
+
+    if (!color || !size) {
+        alert("Vui lòng chọn Màu sắc và Kích thước trước khi thêm vào giỏ hàng!");
+        return;
+    }
+
+    const formData = new FormData(form);
+
+    fetch("{% url 'add_to_cart' %}", {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            updateCartUI();
+            showToast('add-to-cart', {
+                name: data.product_name,
+                image: "{% static 'images/' %}" + data.product_image
+            });
+        }
+    });
+}
+</script>
+{% endblock %}

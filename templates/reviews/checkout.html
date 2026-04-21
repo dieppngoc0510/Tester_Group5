@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% load static shop_filters %}
+
+{% block title %}HANI Shopping - Thanh toán{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'home' %}">Trang chủ</a> &gt; <a href="#">Giỏ hàng</a> &gt; <span>Thanh toán</span>
+</div>
+
+<div class="checkout-container">
+    <div class="checkout-left">
+        <!-- Address Section -->
+        <div class="checkout-box checkout-address-box">
+            <div class="address-marker"><i class="fas fa-map-marker-alt"></i></div>
+            <div class="address-details">
+                <h4>{{ user.first_name|default:"Chưa nhập tên" }} &nbsp;|&nbsp; {{ profile.phone|default:"Chưa cập nhật SĐT" }}</h4>
+                <p>{{ profile.address|default:"Chưa cập nhật địa chỉ giao hàng. Vui lòng cập nhật trong Hồ sơ." }}</p>
+            </div>
+        </div>
+
+        <!-- Products Section -->
+        <div class="checkout-box">
+            <h3 class="checkout-section-title"><i class="fas fa-shopping-bag"></i> Sản phẩm ({{ items|length }})</h3>
+            <div class="checkout-product-list">
+                {% for item in items %}
+                <div class="checkout-product">
+                    <div class="checkout-product-image">
+                        <img src="{% static 'images/' %}{{ item.product.image }}" alt="{{ item.product.name }}">
+                    </div>
+                    <div class="checkout-product-info">
+                        <p class="checkout-product-name">{{ item.product.name }}</p>
+                        <p class="checkout-product-variant">{{ item.color }} &nbsp;|&nbsp; L</p>
+                        <p class="checkout-product-price" style="background:none; color:#000; font-weight:600; font-size:16px;">{{ item.product.price|format_price }}</p>
+                    </div>
+                    <div class="checkout-product-qty">x{{ item.qty }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Shipping Method -->
+        <div class="checkout-box">
+            <h3 class="checkout-section-title"><i class="fas fa-truck"></i> Phương thức vận chuyển</h3>
+            <p style="font-size:13px; color:var(--green); margin-bottom:16px;"><i class="fas fa-check-circle"></i> Đơn hàng đã được miễn phí vận chuyển</p>
+            <div class="method-group" style="background:#f0f7ff; border-color:#3182ce;">
+                <label class="method-option">
+                    <input type="radio" checked>
+                    <div class="method-text">
+                        <p style="font-weight:700; font-size:14px;">Tiêu chuẩn 2-5 ngày</p>
+                        <p style="font-size:12px; color:#666;">Thời gian giao hàng tuỳ thuộc vào điều kiện của đơn vị vận chuyển. Dự kiến giao hàng: 2-5 ngày</p>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Payment Method -->
+        <div class="checkout-box">
+            <h3 class="checkout-section-title"><i class="fas fa-wallet"></i> Phương thức thanh toán</h3>
+            <div class="method-group">
+                <label class="method-option">
+                    <input type="radio" checked>
+                    <div class="method-text">
+                        <p style="font-weight:600; font-size:14px;">Thanh toán khi nhận hàng (COD)</p>
+                    </div>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="checkout-right">
+        <!-- Promo Section -->
+        <div class="checkout-box">
+            <h3 class="checkout-section-title"><i class="fas fa-ticket-alt"></i> Mã giảm giá</h3>
+            {% if request.session.applied_coupon %}
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:16px; border:1px solid var(--gray-200); border-radius:4px; background:var(--gray-50);">
+                <span style="font-weight:700; color:var(--dark);">{{ request.session.applied_coupon }}</span>
+                <span style="font-size:12px; color:var(--green); font-weight:600;">Đã áp dụng</span>
+            </div>
+            {% else %}
+            <div style="padding:16px; border:1px dashed var(--gray-300); border-radius:4px; color:#888; font-style:italic;">
+                Chưa chọn mã giảm giá nào
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Order Summary -->
+        <div class="checkout-box">
+            <h3 class="checkout-section-title"><i class="fas fa-file-invoice"></i> Chi tiết đơn hàng</h3>
+            <div class="checkout-summary-item">
+                <span>Tổng tiền hàng</span>
+                <span>{{ subtotal|format_price }}</span>
+            </div>
+            <div class="checkout-summary-item">
+                <span>Tổng tiền phí vận chuyển</span>
+                <span>0 đ</span>
+            </div>
+            {% if discount > 0 %}
+            <div class="checkout-summary-item" style="color:#666;">
+                <span>Tổng cộng voucher giảm giá</span>
+                <span>- {{ discount|format_price }}</span>
+            </div>
+            {% endif %}
+            
+            <div class="checkout-summary-total">
+                <div class="total-label">
+                    <p>Tổng thanh toán</p>
+                    <p style="font-size:11px; font-weight:400; color:#999;">(Đã bao gồm thuế VAT)</p>
+                </div>
+                <div class="total-amount">{{ total|format_price }}</div>
+            </div>
+
+            <form action="{% url 'confirm_order' %}" method="POST">
+                {% csrf_token %}
+                <button type="submit" class="btn-place-order">ĐẶT HÀNG</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

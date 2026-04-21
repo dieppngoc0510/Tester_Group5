@@ -1,0 +1,455 @@
+{% extends "base.html" %}
+{% load static shop_filters %}
+
+{% block title %}Đơn hàng của tôi - HANI Shop{% endblock %}
+
+{% block content %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+
+    .shopee-wrapper {
+        background-color: #f5f5f5;
+        min-height: 80vh;
+        padding-top: 20px;
+        padding-bottom: 50px;
+        font-family: 'Montserrat', sans-serif;
+    }
+    
+    .shopee-container {
+        width: 1200px;
+        max-width: 100%;
+        margin: 0 auto;
+        display: flex;
+        padding: 0 10px;
+    }
+
+    /* SIDEBAR */
+    .shopee-sidebar {
+        width: 180px;
+        flex-shrink: 0;
+    }
+
+    .shopee-user-info-section {
+        display: flex;
+        padding: 15px 0;
+        border-bottom: 1px solid #efefef;
+        align-items: center;
+    }
+
+    .shopee-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: 1px solid rgba(0,0,0,.09);
+        margin-right: 15px;
+        overflow: hidden;
+        background: #eee;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .shopee-avatar i {
+        font-size: 24px;
+        color: #c6c6c6;
+    }
+
+    .shopee-name {
+        flex: 1;
+        overflow: hidden;
+    }
+
+    .shopee-name-text {
+        font-weight: 600;
+        font-size: 14px;
+        color: #333;
+        margin-bottom: 5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .shopee-edit-btn {
+        color: #888;
+        text-decoration: none;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .shopee-menu {
+        margin-top: 25px;
+    }
+
+    .shopee-menu-group {
+        margin-bottom: 15px;
+    }
+
+    .shopee-menu-title {
+        font-weight: 600;
+        font-size: 14px;
+        color: #333;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+    }
+
+    .shopee-menu-links {
+        list-style: none;
+        padding: 0 0 0 34px;
+        margin: 0;
+    }
+
+    .shopee-menu-links li {
+        margin-bottom: 12px;
+    }
+
+    .shopee-menu-links a {
+        text-decoration: none;
+        color: rgba(0,0,0,.65);
+        font-size: 14px;
+        transition: color 0.2s;
+    }
+
+    .shopee-menu-links a:hover {
+        color: #137FEC;
+    }
+
+    .shopee-menu-links a.active {
+        color: #137FEC;
+    }
+
+    /* ORDERS MAIN CONTENT */
+    .orders-main {
+        flex: 1;
+        margin-left: 27px;
+    }
+
+    .orders-tabs {
+        display: flex;
+        background: #fff;
+        box-shadow: 0 1px 2px 0 rgba(0,0,0,.13);
+        border-radius: 2px;
+        margin-bottom: 12px;
+    }
+
+    .order-tab {
+        flex: 1;
+        text-align: center;
+        padding: 16px 0;
+        color: rgba(0,0,0,.8);
+        font-size: 16px;
+        text-decoration: none;
+        transition: 0.2s;
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+    }
+
+    .order-tab:hover {
+        color: #137FEC;
+    }
+
+    .order-tab.active {
+        color: #137FEC;
+        border-bottom-color: #137FEC;
+    }
+
+    .orders-search-bar {
+        background: #eaeaea;
+        padding: 12px 15px;
+        display: flex;
+        align-items: center;
+        border-radius: 2px;
+        margin-bottom: 12px;
+    }
+
+    .orders-search-bar i {
+        color: #888;
+        font-size: 16px;
+        margin-right: 12px;
+    }
+
+    .orders-search-bar input {
+        border: none;
+        background: transparent;
+        flex: 1;
+        outline: none;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .orders-empty-state {
+        background: #fff;
+        box-shadow: 0 1px 2px 0 rgba(0,0,0,.13);
+        border-radius: 2px;
+        height: 400px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 50px;
+    }
+
+    .orders-empty-state i {
+        font-size: 50px;
+        color: #ddd;
+    }
+
+    .orders-empty-state-text {
+        font-size: 18px;
+        color: rgba(0,0,0,.8);
+    }
+
+    /* ORDER CARD STYLES */
+    .order-card {
+        background: #fff;
+        margin-bottom: 12px;
+        box-shadow: 0 1px 2px 0 rgba(0,0,0,.13);
+        border-radius: 2px;
+    }
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 24px;
+        border-bottom: 1px solid #efefef;
+        align-items: center;
+    }
+    .shop-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 500;
+        font-size: 14px;
+    }
+    .shop-label {
+        background: #137FEC;
+        color: #fff;
+        font-size: 10px;
+        padding: 2px 4px;
+        border-radius: 2px;
+    }
+    .order-status {
+        color: #137FEC;
+        font-size: 14px;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .order-status i {
+        font-size: 16px;
+    }
+    .order-body {
+        padding: 12px 24px;
+        display: flex;
+        border-bottom: 1px solid #efefef;
+        cursor: pointer;
+    }
+    .order-img {
+        width: 80px;
+        height: 80px;
+        border: 1px solid #e1e1e1;
+        margin-right: 15px;
+        object-fit: contain;
+    }
+    .order-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .product-name {
+        font-size: 16px;
+        color: rgba(0,0,0,.87);
+        margin-bottom: 5px;
+        line-height: 20px;
+    }
+    .product-variant {
+        font-size: 14px;
+        color: rgba(0,0,0,.54);
+    }
+    .product-qty {
+        font-size: 14px;
+        color: rgba(0,0,0,.87);
+    }
+    .product-price-col {
+        text-align: right;
+    }
+    .product-original-price {
+        text-decoration: line-through;
+        color: rgba(0,0,0,.54);
+        font-size: 14px;
+        margin-right: 4px;
+    }
+    .product-final-price {
+        color: #137FEC;
+        font-size: 14px;
+    }
+    .order-footer {
+        padding: 24px;
+        background: #fffaf9;
+    }
+    .order-total-row {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    .order-total-label {
+        font-size: 14px;
+        color: rgba(0,0,0,.8);
+        margin-right: 10px;
+    }
+    .order-total-price {
+        font-size: 24px;
+        color: #137FEC;
+    }
+    .order-action-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .order-delivery-status {
+        font-size: 12px;
+        color: rgba(0,0,0,.54);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .btn-action-group {
+        display: flex;
+        gap: 10px;
+    }
+    .btn-action {
+        padding: 8px 20px;
+        min-width: 140px;
+        font-size: 14px;
+        border-radius: 2px;
+        cursor: pointer;
+        text-align: center;
+    }
+    .btn-primary {
+        background: #137FEC;
+        color: #fff;
+        border: 1px solid #137FEC;
+        transition: opacity 0.2s;
+    }
+    .btn-primary:hover {
+        opacity: 0.9;
+    }
+    .btn-secondary {
+        background: #fff;
+        color: #555;
+        border: 1px solid rgba(0,0,0,.09);
+        transition: background 0.2s;
+    }
+    .btn-secondary:hover {
+        background: #f8f8f8;
+    }
+</style>
+
+<div class="shopee-wrapper">
+    <div class="shopee-container">
+        
+        <!-- SIDEBAR -->
+        <div class="shopee-sidebar">
+            <div class="shopee-user-info-section">
+                <div class="shopee-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="shopee-name">
+                    <div class="shopee-name-text">{{ user.username }}</div>
+                    <a href="{% url 'profile' %}" class="shopee-edit-btn">
+                        <i class="fas fa-pencil-alt" style="font-size: 10px;"></i> Sửa hồ sơ
+                    </a>
+                </div>
+            </div>
+
+            <div class="shopee-menu">
+                <div class="shopee-menu-group">
+                    <div class="shopee-menu-title">
+                        <i style="color: #03a9f4; width: 24px; text-align: center;"></i> 
+                        Tài khoản của tôi
+                    </div>
+                    <ul class="shopee-menu-links">
+                        <li><a href="{% url 'profile' %}">Hồ sơ</a></li>
+                        <li><a href="{% url 'change_password' %}">Đổi mật khẩu</a></li>
+                    </ul>
+                </div>
+
+                <div class="shopee-menu-group">
+                    <div class="shopee-menu-title">
+                        <i style="color: #ff5722; width: 24px; text-align: center;"></i> 
+                        Đơn hàng
+                    </div>
+                    <ul class="shopee-menu-links">
+                        <li><a href="{% url 'orders' %}?status=all" {% if status == 'all' %}class="active"{% endif %}>Tất cả</a></li>
+                        <li><a href="{% url 'orders' %}?status=shipping" {% if status == 'shipping' %}class="active"{% endif %}>Vận chuyển</a></li>
+                        <li><a href="{% url 'orders' %}?status=completed" {% if status == 'completed' %}class="active"{% endif %}>Hoàn thành</a></li>
+                        <li><a href="{% url 'orders' %}?status=return" {% if status == 'return' %}class="active"{% endif %}>Trả hàng/hoàn tiền</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="orders-main" style="background: #fff; padding: 25px 40px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border-radius: 4px;">
+            <h2 style="font-size: 18px; font-weight: 600; color: #333; margin: 0 0 15px 0; border-bottom: 2px solid #efefef; padding-bottom: 15px; display: inline-block; width: 100%;">
+                {% if status == 'all' %}Tất cả đơn hàng
+                {% elif status == 'shipping' %}Vận chuyển
+                {% elif status == 'completed' %}Hoàn thành
+                {% elif status == 'return' %}Trả hàng/hoàn tiền
+                {% else %}Đơn hàng{% endif %}
+            </h2>
+
+            <div id="order-list-content">
+                {% if user_orders %}
+                    {% for order in user_orders %}
+                    <div style="border: 1px solid #e0e0e0; border-radius: 4px; margin-top: 20px; overflow: hidden; background: #fff;">
+                        <!-- Duyệt qua từng sản phẩm trong đơn hàng -->
+                        {% for item in order.items.all %}
+                        <div style="display: flex; border-bottom: {% if not forloop.last %}1px solid #f5f5f5{% else %}none{% endif %};">
+                            <img src="{% static 'images/' %}{{ item.product.image_name }}" style="width: 120px; min-height: 110px; object-fit: cover;" onerror="this.src='{% static 'images/sp10.png' %}'" alt="{{ item.product_name }}">
+                            <div style="flex: 1; padding: 15px 20px; display: flex; flex-direction: column; justify-content: center;">
+                                <div style="display: flex; justify-content: space-between;">
+                                    <div style="font-size: 14px; color: #333; font-weight: 500; margin-bottom: 5px;">{{ item.product_name }}</div>
+                                    <div style="font-size: 13px; color: #137FEC; font-weight: 600;">{{ order.get_status_display }}</div>
+                                </div>
+                                <div style="font-size: 12px; color: #888; margin-bottom: 15px;">Phân loại hàng: {{ item.color }} | {{ item.size }}</div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="font-size: 14px; color: #333; font-weight: 600;">{{ item.price|format_price }}</div>
+                                    <div style="font-size: 14px; color: #333;">x{{ item.quantity }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <!-- Phần tổng kết và nút bấm -->
+                        <div style="background: #fffaf9; border-top: 1px solid #e0e0e0; padding: 20px 24px; text-align: right;">
+                            <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-bottom: 15px;">
+                                <span style="font-size: 14px; color: #333;"><i class="fas fa-shield-alt" style="color: #137FEC; margin-right: 5px;"></i> Thành tiền:</span>
+                                <span style="font-size: 24px; font-weight: 700; color: #137FEC;">{{ order.total_amount|format_price }}</span>
+                            </div>
+                            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                                <button style="background: #137FEC; color: white; border: none; border-radius: 2px; padding: 10px 35px; font-size: 14px; font-weight: 500; cursor: pointer;">Mua lại</button>
+                                <button style="background: #fff; color: #555; border: 1px solid rgba(0,0,0,.09); border-radius: 2px; padding: 10px 20px; font-size: 14px; cursor: pointer;">Liên hệ người bán</button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="text-align: center; padding: 100px 0; background: #fff; border-radius: 4px; margin-top: 10px;">
+                        <div style="width: 100px; height: 100px; background: #fdfdfd; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; margin-bottom: 20px;">
+                            <i class="fas fa-file-invoice" style="font-size: 40px; color: #ddd;"></i>
+                        </div>
+                        <p style="color: #888; font-size: 16px;">Chưa có đơn hàng nào</p>
+                    </div>
+                {% endif %}
+            </div>
+
+        </div>
+
+    </div>
+</div>
+{% endblock %}

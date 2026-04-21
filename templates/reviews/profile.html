@@ -1,0 +1,461 @@
+{% extends "base.html" %}
+{% load static shop_filters %}
+
+{% block title %}Thông tin cá nhân - HANI Shop{% endblock %}
+
+{% block content %}
+<style>
+    /* Reset and set exact styling for the profile section */
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+
+    .shopee-wrapper {
+        background-color: #f5f5f5;
+        min-height: 80vh;
+        padding-top: 20px;
+        padding-bottom: 50px;
+        font-family: 'Montserrat', sans-serif;
+    }
+    
+    .shopee-container {
+        width: 1200px;
+        max-width: 100%;
+        margin: 0 auto;
+        display: flex;
+        padding: 0 10px;
+    }
+
+    /* SIDEBAR */
+    .shopee-sidebar {
+        width: 180px;
+        flex-shrink: 0;
+    }
+
+    .shopee-user-info-section {
+        display: flex;
+        padding: 15px 0;
+        border-bottom: 1px solid #efefef;
+        align-items: center;
+    }
+
+    .shopee-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: 1px solid rgba(0,0,0,.09);
+        margin-right: 15px;
+        overflow: hidden;
+        background: #eee;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .shopee-avatar i {
+        font-size: 24px;
+        color: #c6c6c6;
+    }
+
+    .shopee-name {
+        flex: 1;
+        overflow: hidden;
+    }
+
+    .shopee-name-text {
+        font-weight: 600;
+        font-size: 14px;
+        color: #333;
+        margin-bottom: 5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .shopee-edit-btn {
+        color: #888;
+        text-decoration: none;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .shopee-menu {
+        margin-top: 25px;
+    }
+
+    .shopee-menu-group {
+        margin-bottom: 15px;
+    }
+
+    .shopee-menu-title {
+        font-weight: 600;
+        font-size: 14px;
+        color: #333;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+    }
+
+    .shopee-menu-title-icon {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 10px;
+        border-radius: 50%;
+    }
+
+    .shopee-menu-links {
+        list-style: none;
+        padding: 0 0 0 34px;
+        margin: 0;
+    }
+
+    .shopee-menu-links li {
+        margin-bottom: 12px;
+    }
+
+    .shopee-menu-links a {
+        text-decoration: none;
+        color: rgba(0,0,0,.65);
+        font-size: 14px;
+        transition: color 0.2s;
+    }
+
+    .shopee-menu-links a:hover {
+        color: #ee4d2d;
+    }
+
+    .shopee-menu-links a.active {
+        color: #ee4d2d;
+    }
+
+    /* MAIN CONTENT */
+    .shopee-main {
+        flex: 1;
+        background: #fff;
+        box-shadow: 0 1px 2px 0 rgba(0,0,0,.13);
+        border-radius: 2px;
+        margin-left: 27px;
+        padding: 0 30px;
+    }
+
+    .shopee-main-header {
+        border-bottom: 1px solid #efefef;
+        padding: 18px 0;
+    }
+
+    .shopee-main-header h1 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 500;
+        color: #333;
+        text-transform: capitalize;
+    }
+
+    .shopee-main-header p {
+        margin: 4px 0 0;
+        font-size: 14px;
+        color: #555;
+    }
+
+    .shopee-main-body {
+        padding-top: 30px;
+        padding-bottom: 30px;
+        display: flex;
+        min-height: 400px;
+    }
+
+    .shopee-form-section {
+        width: 70%;
+        padding-right: 50px;
+    }
+
+    .shopee-avatar-upload {
+        width: 30%;
+        border-left: 1px solid #efefef;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 20px;
+    }
+
+    .s-form-row {
+        display: flex;
+        margin-bottom: 15px;
+        align-items: center;
+    }
+
+    .s-form-label {
+        width: 25%;
+        text-align: right;
+        color: rgba(85,85,85,.8);
+        font-size: 14px;
+        padding-right: 20px;
+    }
+
+    .s-form-control {
+        width: 75%;
+        font-size: 14px;
+        color: #333;
+        display: flex;
+        align-items: center;
+    }
+
+    .s-form-input {
+        width: 100%;
+        height: 40px;
+        padding: 0 12px;
+        border: 1px solid rgba(0,0,0,.14);
+        border-radius: 2px;
+        outline: none;
+        box-shadow: inset 0 2px 0 0 rgba(0,0,0,.02);
+        font-size: 14px;
+        color: #333;
+        transition: border-color 0.1s;
+    }
+
+    .s-form-input:focus {
+        border-color: #111;
+    }
+
+    .s-text-value {
+        font-size: 14px;
+        color: #333;
+    }
+
+    .s-change-btn {
+        color: #05a;
+        text-decoration: underline;
+        margin-left: 15px;
+        font-size: 13px;
+        cursor: pointer;
+        background: none;
+        border: none;
+        padding: 0;
+    }
+
+    .s-radio-group {
+        display: flex;
+        gap: 15px;
+    }
+
+    .s-radio-btn {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        cursor: pointer;
+    }
+
+    .s-radio-btn input {
+        margin: 0;
+        accent-color: #137FEC;
+    }
+
+    .s-date-select {
+        display: flex;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .s-select-box {
+        height: 40px;
+        border: 1px solid rgba(0,0,0,.14);
+        border-radius: 2px;
+        padding: 0 10px;
+        outline: none;
+        background: #fff;
+        flex: 1;
+        cursor: pointer;
+        color: #333;
+    }
+
+    .s-btn-save {
+        background-color: #137FEC;
+        color: #fff;
+        height: 40px;
+        padding: 0 20px;
+        min-width: 70px;
+        border: none;
+        border-radius: 2px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+
+    .s-btn-save:hover {
+        opacity: 0.9;
+    }
+
+    .upload-preview-circle {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: #f5f5f5;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .upload-preview-circle i {
+        font-size: 40px;
+        color: #c6c6c6;
+    }
+
+    .s-btn-upload {
+        background: #fff;
+        border: 1px solid rgba(0,0,0,.09);
+        box-shadow: 0 1px 1px 0 rgba(0,0,0,.03);
+        color: #555;
+        height: 40px;
+        padding: 0 20px;
+        border-radius: 2px;
+        cursor: pointer;
+        font-size: 14px;
+        opacity: 1;
+        transition: background 0.2s;
+    }
+
+    .s-btn-upload:hover {
+        background: #f8f8f8;
+    }
+
+    .upload-note {
+        margin-top: 18px;
+        color: #999;
+        font-size: 14px;
+        line-height: 1.5;
+        text-align: center;
+    }
+</style>
+
+<div class="shopee-wrapper">
+    <div class="shopee-container">
+        
+        <!-- SIDEBAR -->
+        <div class="shopee-sidebar">
+            <div class="shopee-user-info-section">
+                <div class="shopee-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="shopee-name">
+                    <div class="shopee-name-text">{{ user.username }}</div>
+                    <a href="#" class="shopee-edit-btn">
+                        <i class="fas fa-pencil-alt" style="font-size: 10px;"></i> Sửa hồ sơ
+                    </a>
+                </div>
+            </div>
+
+            <div class="shopee-menu">
+                <div class="shopee-menu-group">
+                    <div class="shopee-menu-title">
+                        <i style="color: #03a9f4; width: 24px; text-align: center;"></i> 
+                        Tài khoản của tôi
+                    </div>
+                    <ul class="shopee-menu-links">
+                        <li><a href="{% url 'profile' %}" class="active">Hồ sơ</a></li>
+                        <li><a href="{% url 'change_password' %}">Đổi mật khẩu</a></li>
+                    </ul>
+                </div>
+
+                <div class="shopee-menu-group">
+                    <div class="shopee-menu-title">
+                        <i style="color: #ff5722; width: 24px; text-align: center;"></i> 
+                        Đơn hàng
+                    </div>
+                    <ul class="shopee-menu-links">
+                        <li><a href="{% url 'orders' %}?status=all">Tất cả</a></li>
+                        <li><a href="{% url 'orders' %}?status=shipping">Vận chuyển</a></li>
+                        <li><a href="{% url 'orders' %}?status=completed">Hoàn thành</a></li>
+                        <li><a href="{% url 'orders' %}?status=return">Trả hàng/hoàn tiền</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="shopee-main">
+            <div class="shopee-main-header">
+                <h1>Hồ sơ của tôi</h1>
+                <p>Quản lý thông tin hồ sơ để bảo mật tài khoản</p>
+            </div>
+
+            <div class="shopee-main-body">
+                
+                <!-- Left Form -->
+                <form method="POST" action="{% url 'profile' %}" class="shopee-form-section">
+                    {% csrf_token %}
+                    <div class="s-form-row">
+                        <div class="s-form-label">Tên đăng nhập</div>
+                        <div class="s-form-control s-text-value">{{ user.username }}</div>
+                    </div>
+
+                    <div class="s-form-row">
+                        <div class="s-form-label">Họ tên</div>
+                        <div class="s-form-control">
+                            <input type="text" name="first_name" class="s-form-input" value="{{ user.first_name }}">
+                        </div>
+                    </div>
+
+                    <div class="s-form-row">
+                        <div class="s-form-label">Email</div>
+                        <div class="s-form-control">
+                            <input type="email" name="email" class="s-form-input" value="{{ user.email }}">
+                        </div>
+                    </div>
+
+                    <div class="s-form-row">
+                        <div class="s-form-label">Số điện thoại</div>
+                        <div class="s-form-control">
+                            <input type="text" name="phone" class="s-form-input" value="{{ profile.phone|default_if_none:'' }}">
+                        </div>
+                    </div>
+
+                    <div class="s-form-row">
+                        <div class="s-form-label">Ngày sinh</div>
+                        <div class="s-form-control">
+                            <input type="date" name="birthdate" class="s-form-input" value="{{ birthdate }}" style="cursor: pointer; text-transform: uppercase;">
+                        </div>
+                    </div>
+
+                    <div class="s-form-row">
+                        <div class="s-form-label">Địa chỉ</div>
+                        <div class="s-form-control">
+                            <input type="text" name="address" class="s-form-input" value="{{ address }}">
+                        </div>
+                    </div>
+
+                    <div class="s-form-row">
+                        <div class="s-form-label">Giới tính</div>
+                        <div class="s-form-control s-radio-group">
+                            <label class="s-radio-btn"><input type="radio" name="gender" value="nu" {% if gender == 'nu' or not gender %}checked{% endif %}> Nữ</label>
+                            <label class="s-radio-btn"><input type="radio" name="gender" value="nam" {% if gender == 'nam' %}checked{% endif %}> Nam</label>
+                            <label class="s-radio-btn"><input type="radio" name="gender" value="khac" {% if gender == 'khac' %}checked{% endif %}> Khác</label>
+                        </div>
+                    </div>
+
+                    <div class="s-form-row" style="margin-top: 40px;">
+                        <div class="s-form-label"></div>
+                        <div class="s-form-control">
+                            <button type="submit" class="s-btn-save">Lưu</button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Right Avatar Upload -->
+                <div class="shopee-avatar-upload">
+                    <div class="upload-preview-circle">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <button class="s-btn-upload">Chọn ảnh</button>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

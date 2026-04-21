@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% load static shop_filters %}
+
+{% block content %}
+<!-- Banner Slider -->
+<section class="banner-slider" id="banner-slider">
+    <div class="slider-track" id="slider-track">
+        <div class="slide"><img src="{% static 'images/Banner1.png' %}" alt="New Arrivals"></div>
+        <div class="slide"><img src="{% static 'images/Banner2.png' %}" alt="Coming Soon"></div>
+        <div class="slide"><img src="{% static 'images/Banner3.png' %}" alt="Black Friday"></div>
+    </div>
+    <button class="slider-btn prev" onclick="prevSlide()"><i class="fas fa-chevron-left"></i></button>
+    <button class="slider-btn next" onclick="nextSlide()"><i class="fas fa-chevron-right"></i></button>
+    <div class="slider-dots" id="slider-dots"></div>
+</section>
+
+<!-- SẢN PHẨM MỚI -->
+<section class="section-products">
+    <h2 class="section-title">SẢN PHẨM MỚI</h2>
+    <div class="product-grid" id="new-products-grid">
+        {% for product in products %}
+        <div class="product-card" onclick="location.href='{% url 'product_detail' product.id %}'">
+            <div class="product-card-image">
+                <img src="{% static 'images/' %}{{ product.image }}" alt="{{ product.name }}" loading="lazy">
+            </div>
+            <div class="product-card-info">
+                <div class="product-colors-preview">
+                    {% for color in product.colors %}
+                    <div class="color-dot" style="background:{{ color.hex }}" title="{{ color.name }}"></div>
+                    {% endfor %}
+                </div>
+                <p class="product-card-name">{{ product.name }}</p>
+                <p class="product-card-price">{{ product.price|format_price }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="section-action">
+        <a href="{% url 'all_products_cat' 'san-pham-moi' %}" class="btn-view-more">XEM THÊM <i class="fas fa-arrow-right"></i></a>
+    </div>
+</section>
+
+<!-- BỘ SƯU TẬP THU ĐÔNG -->
+<section class="section-collection">
+    <h2 class="section-title">BỘ SƯU TẬP THU ĐÔNG</h2>
+    <div class="collection-banner">
+        <img src="{% static 'images/Banner2.png' %}" alt="Bộ sưu tập thu đông">
+    </div>
+    <div class="section-action center">
+        <a href="{% url 'all_products_cat' 'bo-suu-tap' %}" class="btn-view-all">XEM TẤT CẢ <i class="fas fa-arrow-right"></i></a>
+    </div>
+</section>
+
+<!-- BỘ SƯU TẬP HÈ -->
+<section class="section-collection-summer" style="background-color: #fdfdfd; padding-bottom: 40px;">
+    <h2 class="section-title">BỘ SƯU TẬP HÈ</h2>
+    <div class="product-grid" style="grid-template-columns: repeat(5, 1fr);">
+        {% for product in summer_products %}
+        <div class="product-card" onclick="location.href='{% url 'product_detail' product.id %}'">
+            <div class="product-card-image">
+                <img src="{% static 'images/' %}{{ product.image }}" alt="{{ product.name }}" loading="lazy">
+            </div>
+            <div class="product-card-info">
+                <p class="product-card-name">{{ product.name }}</p>
+                <p class="product-card-price">{{ product.price|format_price }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="section-action center">
+        <a href="{% url 'all_products_cat' 'bo-suu-tap-he' %}" class="btn-view-all">XEM TẤT CẢ <i class="fas fa-arrow-right"></i></a>
+    </div>
+</section>
+
+<!-- SIÊU SALE KHUYẾN MÃI -->
+<section class="section-sale">
+    <h2 class="section-title">SIÊU SALE KHUYẾN MÃI</h2>
+    <div class="sale-banner">
+        <img src="{% static 'images/Banner3.png' %}" alt="Black Friday Sale">
+    </div>
+    <div class="coupon-cards">
+        {% for coupon in coupons %}
+        <div class="coupon-card">
+            <div class="coupon-icon {{ coupon.color }}"></div>
+            <div class="coupon-info">
+                <p class="coupon-code {{ coupon.color }}">NHẬP MÃ: {{ coupon.code }}</p>
+                <p class="coupon-desc">{{ coupon.desc }}</p>
+                <div class="coupon-actions">
+                    <button class="btn-coupon-save {{ coupon.color }}">Lưu</button>
+                    <button class="btn-coupon-detail">Điều kiện</button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

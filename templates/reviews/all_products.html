@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load static shop_filters %}
+
+{% block title %}HANI Shopping - {{ title }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'home' %}">Trang chủ</a> &gt; <span>{{ breadcrumb }}</span>
+</div>
+
+{% if category_slug == 'bo-suu-tap' %}
+    <!-- BỘ SƯU TẬP THU ĐÔNG -->
+    <h2 class="section-title" style="border-bottom: 2px solid var(--dark); margin: 0 40px; padding: 24px 0 14px;">BỘ SƯU TẬP THU ĐÔNG</h2>
+    <div class="product-grid full-grid">
+        {% for product in winter_products %}
+        <div class="product-card" onclick="location.href='{% url 'product_detail' product.id %}'">
+            <div class="product-card-image">
+                <img src="{% static 'images/' %}{{ product.image }}" alt="{{ product.name }}" loading="lazy">
+            </div>
+            <div class="product-card-info">
+                <p class="product-card-name">{{ product.name }}</p>
+                <p class="product-card-price">{{ product.price|format_price }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- BỘ SƯU TẬP HÈ -->
+    <h2 class="section-title" style="border-bottom: 2px solid var(--dark); margin: 40px 40px 0; padding: 24px 0 14px;">BỘ SƯU TẬP HÈ</h2>
+    <div class="product-grid full-grid">
+        {% for product in summer_products %}
+        <div class="product-card" onclick="location.href='{% url 'product_detail' product.id %}'">
+            <div class="product-card-image">
+                <img src="{% static 'images/' %}{{ product.image }}" alt="{{ product.name }}" loading="lazy">
+            </div>
+            <div class="product-card-info">
+                <p class="product-card-name">{{ product.name }}</p>
+                <p class="product-card-price">{{ product.price|format_price }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <h2 class="section-title" style="border-bottom: 2px solid var(--dark); margin: 0 40px; padding: 24px 0 14px;">{{ title }}</h2>
+
+    <div class="product-grid full-grid">
+        {% if products %}
+            {% for product in products %}
+            <div class="product-card" onclick="location.href='{% url 'product_detail' product.id %}'">
+                <div class="product-card-image">
+                    <img src="{% static 'images/' %}{{ product.image }}" alt="{{ product.name }}" loading="lazy">
+                </div>
+                <div class="product-card-info">
+                    <p class="product-card-name">{{ product.name }}</p>
+                    <p class="product-card-price">{{ product.price|format_price }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div style="grid-column: 1/-1; text-align: center; padding: 60px 0; color: #a0a0a0;">
+                <i class="fas fa-search" style="font-size: 40px; margin-bottom: 16px; display: block;"></i>
+                <p>Không tìm thấy sản phẩm nào phù hợp</p>
+            </div>
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}
