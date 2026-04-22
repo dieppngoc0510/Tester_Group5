@@ -5,9 +5,11 @@
 <!-- Banner Slider -->
 <section class="banner-slider" id="banner-slider">
     <div class="slider-track" id="slider-track">
-        <div class="slide"><img src="{% static 'images/Banner1.png' %}" alt="New Arrivals"></div>
-        <div class="slide"><img src="{% static 'images/Banner2.png' %}" alt="Coming Soon"></div>
-        <div class="slide"><img src="{% static 'images/Banner3.png' %}" alt="Black Friday"></div>
+        <div class="slide"><img src="{% static 'images/img_22.jpg' %}" alt="New Arrivals"></div>
+        <div class="slide"><img src="{% static 'images/img_23.jpg' %}" alt="Coming Soon"></div>
+        <div class="slide"><img src="{% static 'images/img_27.jpg' %}" alt="Collection"></div>
+        <div class="slide"><img src="{% static 'images/img_39.jpg' %}" alt="Winter Collection"></div>
+        <div class="slide"><img src="{% static 'images/img_41.jpg' %}" alt="Fashion Show"></div>
     </div>
     <button class="slider-btn prev" onclick="prevSlide()"><i class="fas fa-chevron-left"></i></button>
     <button class="slider-btn next" onclick="nextSlide()"><i class="fas fa-chevron-right"></i></button>
@@ -44,7 +46,7 @@
 <section class="section-collection">
     <h2 class="section-title">BỘ SƯU TẬP THU ĐÔNG</h2>
     <div class="collection-banner">
-        <img src="{% static 'images/Banner2.png' %}" alt="Bộ sưu tập thu đông">
+        <img src="{% static 'images/img_23.jpg' %}" alt="Bộ sưu tập thu đông">
     </div>
     <div class="section-action center">
         <a href="{% url 'all_products_cat' 'bo-suu-tap' %}" class="btn-view-all">XEM TẤT CẢ <i class="fas fa-arrow-right"></i></a>
@@ -76,7 +78,7 @@
 <section class="section-sale">
     <h2 class="section-title">SIÊU SALE KHUYẾN MÃI</h2>
     <div class="sale-banner">
-        <img src="{% static 'images/Banner3.png' %}" alt="Black Friday Sale">
+        <img src="{% static 'images/my_image.jpg' %}" alt="Black Friday Sale">
     </div>
     <div class="coupon-cards">
         {% for coupon in coupons %}

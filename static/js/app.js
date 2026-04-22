@@ -133,10 +133,32 @@ function updateCartUI() {
                             <span class="checkmark"></span>
                         </label>
                     </div>
-                    <div class="cart-item-image"><img src="/static/images/${item.image}"></div>
+                    <div class="cart-item-image" onclick="location.href='/product/${item.product_id}/'" style="cursor:pointer;"><img src="/static/images/${item.image}"></div>
                     <div class="cart-item-info">
-                        <div class="cart-item-name">${item.name}</div>
-                        <div class="cart-item-variant">${item.color} | ${item.size}</div>
+                        <div class="cart-item-name" onclick="location.href='/product/${item.product_id}/'" style="cursor:pointer;">${item.name}</div>
+                        <div class="cart-item-variant" style="margin-top: 8px;">
+                            <div class="cart-custom-select" id="variant-select-${index}">
+                                <div class="custom-select-trigger" onclick="toggleCustomSelect(${index})">
+                                    ${item.color} | ${item.size}
+                                </div>
+                                <div class="custom-select-options">
+                                    <div class="custom-optgroup-label">MÀU SẮC</div>
+                                    ${item.available_colors.map(c => `
+                                        <div class="custom-option ${c.name === item.color ? 'selected' : ''}" 
+                                             onclick="changeCartVariant(${item.product_id}, '${item.color}', '${item.size}', '${c.name}', '${item.size}')">
+                                            ${c.name}
+                                        </div>
+                                    `).join('')}
+                                    <div class="custom-optgroup-label">KÍCH THƯỚC</div>
+                                    ${item.available_sizes.map(s => `
+                                        <div class="custom-option ${s === item.size ? 'selected' : ''}" 
+                                             onclick="changeCartVariant(${item.product_id}, '${item.color}', '${item.size}', '${item.color}', '${s}')">
+                                            ${s}
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
                         <div class="cart-item-price-row">
                             <span class="cart-item-price">${item.price_formatted}</span>
                             <div class="cart-item-qty">
@@ -200,6 +222,52 @@ function updateCartItemqty(index, action, product_id, color, size) {
     .then(data => { if (data.success) updateCartUI(); });
 }
 
+function toggleCustomSelect(index) {
+    const el = document.getElementById(`variant-select-${index}`);
+    const isActive = el.classList.contains('active');
+    
+    // Close all other custom selects first
+    document.querySelectorAll('.cart-custom-select').forEach(s => s.classList.remove('active'));
+    
+    if (!isActive) {
+        el.classList.add('active');
+    }
+}
+
+// Global click handler to close custom selects when clicking outside
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.cart-custom-select')) {
+        document.querySelectorAll('.cart-custom-select').forEach(s => s.classList.remove('active'));
+    }
+});
+
+function changeCartVariant(product_id, old_color, old_size, new_color, new_size) {
+    if (old_color === new_color && old_size === new_size) return;
+    
+    fetch('/cart/update/', {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify({ 
+            product_id, 
+            color: old_color, 
+            size: old_size, 
+            new_color, 
+            new_size, 
+            action: 'change_variant' 
+        })
+    })
+    .then(res => res.json())
+    .then(data => { 
+        if (data.success) {
+            updateCartUI();
+            showToast('info', null, 'Đã cập nhật phân loại sản phẩm');
+        }
+    });
+}
+
 function toggleSelectAll() {
     const checked = document.getElementById('select-all-cart').checked;
     fetch('/cart/update/', {
@@ -217,12 +285,44 @@ function toggleSelectAll() {
 function showToast(type, product = null, message = '') {
     const container = document.getElementById('toast-container');
     if(!container) return;
-    let toastHTML = `<div class="toast"><span class="toast-text">${message || 'Thành công!'}</span></div>`;
+    
+    let toastHTML = '';
+    
     if (type === 'add-to-cart' && product) {
-        toastHTML = `<div class="toast"><div class="toast-image"><img src="${product.image}"></div><span class="toast-text">Đã thêm vào giỏ!</span></div>`;
+        toastHTML = `
+            <div class="toast">
+                <div class="toast-content">
+                    <div class="toast-image">
+                        <img src="${product.image}">
+                    </div>
+                    <div class="toast-message">
+                        Đã thêm sản phẩm vào giỏ hàng!
+                    </div>
+                    <button class="toast-btn-view" onclick="openCart(); this.closest('.toast').remove();">
+                        Xem giỏ hàng
+                    </button>
+                </div>
+            </div>
+        `;
+    } else {
+        toastHTML = `
+            <div class="toast">
+                <div class="toast-content" style="padding: 15px 25px; min-width: 300px; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-info-circle" style="color: #4a90e2;"></i>
+                    <div class="toast-message" style="font-size: 15px;">${message || 'Thành công!'}</div>
+                </div>
+            </div>
+        `;
     }
+
     const div = document.createElement('div');
     div.innerHTML = toastHTML;
-    container.appendChild(div.firstElementChild);
-    setTimeout(() => { if(container.firstChild) container.firstChild.remove(); }, 3500);
+    const toastElement = div.firstElementChild;
+    container.appendChild(toastElement);
+    
+    // Auto remove after 4.5s
+    setTimeout(() => { 
+        if(container.contains(toastElement)) toastElement.remove(); 
+    }, 4500);
 }
+

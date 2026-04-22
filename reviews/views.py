@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.contrib import messages
-from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
+from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout, update_session_auth_hash
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
@@ -376,6 +376,8 @@ def cart_data(request):
                     'price_formatted': format_price(product['price']),
                     'color': di.color,
                     'size': di.size,
+                    'available_colors': product.get('colors', []),
+                    'available_sizes': product.get('sizes', []),
                     'qty': di.quantity,
                     'selected': di.selected
                 })
@@ -392,6 +394,8 @@ def cart_data(request):
                     'price_formatted': format_price(product['price']),
                     'color': item['color'],
                     'size': item['size'],
+                    'available_colors': product.get('colors', []),
+                    'available_sizes': product.get('sizes', []),
                     'qty': item['qty'],
                     'selected': item.get('selected', False)
                 })
@@ -433,6 +437,20 @@ def update_cart(request):
                     elif action == 'toggle':
                         item.selected = not item.selected
                         item.save()
+                    elif action == 'change_variant':
+                        new_color = data.get('new_color')
+                        new_size = data.get('new_size')
+                        # Check if another item with same new variant already exists
+                        try:
+                            existing = CartItem.objects.get(user=request.user, product_id=product_id, color=new_color, size=new_size)
+                            if existing.id != item.id:
+                                existing.quantity += item.quantity
+                                existing.save()
+                                item.delete()
+                        except CartItem.DoesNotExist:
+                            item.color = new_color
+                            item.size = new_size
+                            item.save()
                 except CartItem.DoesNotExist: pass
         else:
             cart = request.session.get('cart', [])
@@ -449,6 +467,17 @@ def update_cart(request):
                         elif action == 'delete':
                             cart.remove(item)
                         elif action == 'toggle': item['selected'] = not item.get('selected', False)
+                        elif action == 'change_variant':
+                            new_color = data.get('new_color')
+                            new_size = data.get('new_size')
+                            # Check if another item with same new variant exists in session cart
+                            existing = next((i for i in cart if i['product_id'] == product_id and i['color'] == new_color and i['size'] == new_size), None)
+                            if existing and existing != item:
+                                existing['qty'] += item['qty']
+                                cart.remove(item)
+                            else:
+                                item['color'] = new_color
+                                item['size'] = new_size
                         break
             request.session['cart'] = cart
         return JsonResponse({'success': True})
@@ -621,7 +650,7 @@ def login(request):
             response.set_cookie('just_logged_in', '1', max_age=30) 
             return response
         else:
-            messages.error(request, 'Tên đăng nhập/Số điện thoại hoặc mật khẩu không chính xác!')
+            messages.error(request, 'Tên đăng nhập hoặc mật khẩu không chính xác!')
     return render(request, 'reviews/login.html')
 
 @never_cache
@@ -634,7 +663,6 @@ def register(request):
         email = request.POST.get('email', '').strip()
         phone = request.POST.get('phone', '').strip()
         password = request.POST.get('password', '').strip()
-        address = request.POST.get('address', '').strip()
         
         if User.objects.filter(username=username).exists():
             messages.error(request, 'Tên đăng nhập này đã tồn tại!')
@@ -649,8 +677,7 @@ def register(request):
             # Tạo profile và lưu thông tin ngay lập tức vào DB
             UserProfile.objects.create(
                 user=user,
-                phone=phone,
-                address=address
+                phone=phone
             )
             
             auth_login(request, user)
@@ -746,8 +773,32 @@ def change_password(request):
         return redirect('login')
         
     if request.method == 'POST':
-        # Demo logic cho đổi mật khẩu
-        messages.success(request, 'Đổi mật khẩu thành công!')
+        current_password = request.POST.get('current_password', '')
+        new_password = request.POST.get('new_password', '')
+        confirm_password = request.POST.get('confirm_password', '')
+        
+        # Kiểm tra mật khẩu hiện tại
+        if not request.user.check_password(current_password):
+            messages.error(request, 'Mật khẩu hiện tại không chính xác.')
+            return redirect('change_password')
+            
+        # Kiểm tra mật khẩu mới khớp nhau
+        if new_password != confirm_password:
+            messages.error(request, 'Mật khẩu mới không khớp nhau.')
+            return redirect('change_password')
+            
+        if len(new_password) < 6:
+            messages.error(request, 'Mật khẩu mới phải có ít nhất 6 ký tự.')
+            return redirect('change_password')
+
+        # Thực hiện đổi mật khẩu
+        request.user.set_password(new_password)
+        request.user.save()
+        
+        # Giữ cho user không bị đăng xuất sau khi đổi pass
+        update_session_auth_hash(request, request.user)
+        
+        messages.success(request, 'Cập nhật mật khẩu thành công!')
         return redirect('profile')
         
     return render(request, 'reviews/change_password.html', {
