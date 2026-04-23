@@ -24,6 +24,7 @@ class Product(models.Model):
     sizes = models.JSONField(default=list, blank=True, verbose_name="Danh sách size (JSON list)")
     categories = models.ManyToManyField(Category, verbose_name="Danh mục")
     description = models.TextField(blank=True, verbose_name="Mô tả")
+    stock = models.IntegerField(default=100, verbose_name="Tồn kho")
 
     class Meta:
         verbose_name = "Sản phẩm"
@@ -44,6 +45,7 @@ class UserProfile(models.Model):
 
 class Order(models.Model):
     STATUS_CHOICES = [
+        ('pending', 'Chờ xử lý'),
         ('shipping', 'Đang vận chuyển'),
         ('completed', 'Hoàn thành'),
         ('return', 'Trả hàng/Hoàn tiền'),

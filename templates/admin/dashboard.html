@@ -1,0 +1,432 @@
+{% extends "base.html" %}
+{% load static shop_filters %}
+
+{% block title %}HANI Shop - Trang chủ Quản trị{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        margin: 0;
+        background-color: #f4f7f9;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .admin-layout {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    /* Sidebar - Mirroring requested image */
+    .admin-sidebar {
+        width: 270px;
+        background: #334155;
+        color: #94a3b8;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        border-right: 1px solid #1e293b;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow-y: auto;
+    }
+
+    .sidebar-header {
+        padding: 30px 25px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .sidebar-logo-icon {
+        width: 40px;
+        height: 40px;
+        background: #1e293b;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 20px;
+    }
+
+    .sidebar-title-box {
+        line-height: 1.2;
+    }
+
+    .sidebar-title {
+        font-size: 20px;
+        font-weight: 800;
+        color: white;
+        display: block;
+    }
+
+    .sidebar-subtitle {
+        font-size: 12px;
+        color: #94a3b8;
+    }
+
+    .sidebar-menu {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        flex: 1;
+    }
+
+    .sidebar-link {
+        display: flex;
+        align-items: center;
+        padding: 14px 25px;
+        color: #e2e8f0;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s;
+        gap: 15px;
+        border-left: 4px solid transparent;
+    }
+
+    .sidebar-link i {
+        font-size: 18px;
+        width: 24px;
+        text-align: center;
+    }
+
+    .sidebar-link:hover, .sidebar-link.active {
+        background: #e2e8f0;
+        color: #1e293b;
+    }
+
+    .sidebar-link.active {
+        background: #cbd5e1;
+        color: #0f172a;
+        font-weight: 700;
+    }
+
+    .sidebar-footer {
+        padding: 20px 0;
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    /* Topbar */
+    .admin-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .admin-topbar {
+        background: white;
+        height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 40px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .topbar-left {
+        display: flex;
+        align-items: center;
+        gap: 50px;
+    }
+
+    .topbar-title {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 800;
+        color: #334155;
+        text-transform: uppercase;
+    }
+
+    .topbar-search {
+        position: relative;
+        width: 300px;
+    }
+
+    .topbar-search input {
+        width: 100%;
+        background: #f1f5f9;
+        border: none;
+        border-radius: 6px;
+        padding: 10px 15px;
+        padding-right: 40px;
+        font-size: 14px;
+        outline: none;
+    }
+
+    .topbar-search i {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+    }
+
+    .topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .noti-btn {
+        width: 36px;
+        height: 36px;
+        background: #f1f5f9;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #334155;
+        position: relative;
+        cursor: pointer;
+    }
+
+    .noti-btn .dot {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        width: 8px;
+        height: 8px;
+        background: #ef4444;
+        border-radius: 50%;
+        border: 2px solid white;
+    }
+
+    .user-profile-dash {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .user-info-text {
+        line-height: 1.2;
+    }
+
+    .user-name {
+        font-weight: 700;
+        color: #334155;
+        font-size: 15px;
+        display: block;
+    }
+
+    .user-role {
+        font-size: 11px;
+        color: #94a3b8;
+    }
+
+    /* Dropdown Styles */
+    .user-dropdown-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        width: 180px;
+        background: white;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        z-index: 1000;
+        margin-top: 15px;
+        overflow: hidden;
+        animation: slideDown 0.2s ease-out;
+    }
+
+    @keyframes slideDown {
+        from { transform: translateY(-10px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    .user-dropdown-menu.show {
+        display: block;
+    }
+
+    .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 20px;
+        color: #334155;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+    .dropdown-item:hover {
+        background: #f1f5f9;
+        color: #1e293b;
+    }
+
+    .dropdown-item i {
+        font-size: 16px;
+        width: 20px;
+        text-align: center;
+    }
+
+    .dropdown-item.red {
+        color: #ef4444;
+    }
+
+    .dropdown-item.red:hover {
+        background: #fef2f2;
+        color: #dc2626;
+    }
+
+    /* Content Area */
+    .admin-content {
+        padding: 40px;
+        flex: 1;
+    }
+
+    .welcome-text {
+        font-size: 28px;
+        font-style: italic;
+        color: #334155;
+        margin-bottom: 50px;
+        font-weight: 400;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        border: 1px solid #e2e8f0;
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+    }
+
+    .stat-text h4 {
+        margin: 0;
+        font-size: 13px;
+        color: #64748b;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .stat-text p {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 800;
+        color: #1e293b;
+    }
+</style>
+
+<div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+        <div class="sidebar-header" style="justify-content: center; padding: 15px 10px;">
+            <img src="{% static 'images/logo.png' %}" alt="Logo" style="height: 65px; width: auto; object-fit: contain; filter: brightness(0) invert(1);">
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="{% url 'admin_dashboard' %}" class="sidebar-link active"><i class="fas fa-home"></i> Trang chủ</a></li>
+            <li><a href="#" class="sidebar-link"><i class="fas fa-key"></i> Đổi mật khẩu</a></li>
+            <li><a href="{% url 'admin_orders' %}" class="sidebar-link"><i class="fas fa-shopping-bag"></i> Quản lý đơn đặt hàng</a></li>
+            <li><a href="#" class="sidebar-link"><i class="fas fa-box-open"></i> Quản lý sản phẩm</a></li>
+            <li><a href="#" class="sidebar-link"><i class="fas fa-users"></i> Quản lý khách hàng</a></li>
+            <li><a href="#" class="sidebar-link"><i class="fas fa-percentage"></i> Quản lý khuyến mãi</a></li>
+            <li><a href="#" class="sidebar-link"><i class="fas fa-undo"></i> Quản lý đổi trả</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <a href="#" class="sidebar-link"><i class="fas fa-cog"></i> Cài đặt</a>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="admin-main">
+        <header class="admin-topbar">
+            <div class="topbar-left">
+                <h1 class="topbar-title">TRANG CHỦ</h1>
+                <div class="topbar-search">
+                    <input type="text" placeholder="Tìm kiếm...">
+                    <i class="fas fa-search"></i>
+                </div>
+            </div>
+            <div class="topbar-right">
+                <div class="noti-btn">
+                    <i class="fas fa-bell"></i>
+                    <div class="dot"></div>
+                </div>
+                <div class="user-profile-dash" onclick="toggleUserDropdown(event)" style="position: relative; cursor: pointer;">
+                    <img src="{% static 'images/user_icon.png' %}" class="user-avatar" alt="Avatar">
+                    <div class="user-info-text">
+                        <span class="user-name">{{ user.first_name|default:user.username }}</span>
+                        <span class="user-role">Quản trị viên</span>
+                    </div>
+                    <i class="fas fa-chevron-down" style="font-size: 10px; color: #94a3b8; margin-left: 5px;"></i>
+                    
+                    <div id="user-dropdown" class="user-dropdown-menu">
+                        <a href="{% url 'logout' %}" class="dropdown-item red"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="admin-content">
+            <h2 class="welcome-text">Chào mừng quay trở lại, {{ user.first_name|default:user.username }}!</h2>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="color: #3b82f6;"><i class="fas fa-shopping-bag"></i></div>
+                    <div class="stat-text">
+                        <h4>Tổng đơn hàng</h4>
+                        <p>{{ stats.total_orders }}</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="color: #10b981;"><i class="fas fa-wallet"></i></div>
+                    <div class="stat-text">
+                        <h4>Doanh thu chờ</h4>
+                        <p>{{ stats.pending_revenue }}</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="color: #f97316;"><i class="fas fa-truck-loading"></i></div>
+                    <div class="stat-text">
+                        <h4>Giao trong ngày</h4>
+                        <p>{{ stats.today_delivery }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    function toggleUserDropdown(e) {
+        e.stopPropagation();
+        document.getElementById('user-dropdown').classList.toggle('show');
+    }
+
+    window.addEventListener('click', function() {
+        const dd = document.getElementById('user-dropdown');
+        if (dd && dd.classList.contains('show')) {
+            dd.classList.remove('show');
+        }
+    });
+</script>
+{% endblock %}

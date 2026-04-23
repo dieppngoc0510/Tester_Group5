@@ -347,6 +347,129 @@
     .btn-secondary:hover {
         background: #f8f8f8;
     }
+
+    /* RESPONSIVE */
+    @media screen and (max-width: 768px) {
+        .shopee-container {
+            flex-direction: column;
+            padding: 0;
+        }
+
+        .shopee-sidebar {
+            width: 100%;
+            padding: 15px;
+            background: #fff;
+            margin-bottom: 5px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .shopee-user-info-section {
+            padding-bottom: 15px;
+            border-bottom: 1px dashed #eee;
+        }
+
+        .shopee-menu {
+            display: flex;
+            overflow-x: auto;
+            margin-top: 10px;
+            gap: 12px;
+            padding: 5px 0 15px;
+            scrollbar-width: none; /* Hide scrollbar for clean look */
+        }
+        
+        .shopee-menu::-webkit-scrollbar { display: none; }
+
+        .shopee-menu-group {
+            margin-bottom: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .shopee-menu-title {
+            display: none; /* Hide group titles on mobile to save space, use icons instead */
+        }
+
+        .shopee-menu-links {
+            padding: 0;
+            display: flex;
+            gap: 8px;
+        }
+
+        .shopee-menu-links li {
+            margin-bottom: 0;
+        }
+
+        .shopee-menu-links a {
+            padding: 8px 16px;
+            background: var(--gray-100);
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            white-space: nowrap;
+            display: block;
+        }
+
+        .shopee-menu-links a.active {
+            background: #137FEC;
+            color: #fff;
+        }
+
+        .orders-main {
+            margin-left: 0 !important;
+            padding: 10px !important;
+        }
+
+        .orders-main h2 {
+            font-size: 15px !important;
+            padding-bottom: 10px !important;
+        }
+
+        .order-item-mobile {
+            flex-direction: row !important; /* Keep horizontal on mobile if image is small */
+            align-items: center;
+        }
+
+        .order-img-mobile {
+            width: 90px !important;
+            height: 90px !important;
+            min-height: auto !important;
+            border-radius: 4px;
+        }
+
+        .order-content-mobile {
+            padding: 12px !important;
+        }
+        
+        .order-content-mobile > div:first-child {
+            flex-direction: column !important;
+            gap: 2px;
+        }
+
+        .order-footer-mobile {
+            padding: 15px !important;
+        }
+
+        .order-total-row {
+            justify-content: flex-end !important;
+            margin-bottom: 15px !important;
+        }
+        
+        .order-total-price {
+            font-size: 18px !important;
+        }
+
+        .order-action-btns-mobile {
+            flex-direction: column !important;
+            gap: 8px !important;
+        }
+
+        .btn-mobile-full {
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 12px 0 !important;
+        }
+    }
 </style>
 
 <div class="shopee-wrapper">
@@ -409,9 +532,9 @@
                     <div style="border: 1px solid #e0e0e0; border-radius: 4px; margin-top: 20px; overflow: hidden; background: #fff;">
                         <!-- Duyệt qua từng sản phẩm trong đơn hàng -->
                         {% for item in order.items.all %}
-                        <div style="display: flex; border-bottom: {% if not forloop.last %}1px solid #f5f5f5{% else %}none{% endif %};">
-                            <img src="{% static 'images/' %}{{ item.product.image_name }}" style="width: 120px; min-height: 110px; object-fit: cover;" onerror="this.src='{% static 'images/sp10.png' %}'" alt="{{ item.product_name }}">
-                            <div style="flex: 1; padding: 15px 20px; display: flex; flex-direction: column; justify-content: center;">
+                        <div class="order-item-mobile" style="display: flex; border-bottom: {% if not forloop.last %}1px solid #f5f5f5{% else %}none{% endif %};">
+                            <img src="{% static 'images/' %}{{ item.product.image_name }}" class="order-img-mobile" style="width: 120px; min-height: 110px; object-fit: cover;" onerror="this.src='{% static 'images/sp10.png' %}'" alt="{{ item.product_name }}">
+                            <div class="order-content-mobile" style="flex: 1; padding: 15px 20px; display: flex; flex-direction: column; justify-content: center;">
                                 <div style="display: flex; justify-content: space-between;">
                                     <div style="font-size: 14px; color: #333; font-weight: 500; margin-bottom: 5px;">{{ item.product_name }}</div>
                                     <div style="font-size: 13px; color: #137FEC; font-weight: 600;">{{ order.get_status_display }}</div>
@@ -426,14 +549,14 @@
                         {% endfor %}
 
                         <!-- Phần tổng kết và nút bấm -->
-                        <div style="background: #fffaf9; border-top: 1px solid #e0e0e0; padding: 20px 24px; text-align: right;">
-                            <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-bottom: 15px;">
+                        <div class="order-footer-mobile" style="background: #fffaf9; border-top: 1px solid #e0e0e0; padding: 20px 24px; text-align: right;">
+                            <div class="order-total-row" style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-bottom: 15px;">
                                 <span style="font-size: 14px; color: #333;"><i class="fas fa-shield-alt" style="color: #137FEC; margin-right: 5px;"></i> Thành tiền:</span>
-                                <span style="font-size: 24px; font-weight: 700; color: #137FEC;">{{ order.total_amount|format_price }}</span>
+                                <span class="order-total-price" style="font-size: 24px; font-weight: 700; color: #137FEC;">{{ order.total_amount|format_price }}</span>
                             </div>
-                            <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                                <button style="background: #137FEC; color: white; border: none; border-radius: 2px; padding: 10px 35px; font-size: 14px; font-weight: 500; cursor: pointer;">Mua lại</button>
-                                <button style="background: #fff; color: #555; border: 1px solid rgba(0,0,0,.09); border-radius: 2px; padding: 10px 20px; font-size: 14px; cursor: pointer;">Liên hệ người bán</button>
+                            <div class="order-action-btns-mobile" style="display: flex; justify-content: flex-end; gap: 10px;">
+                                <button class="btn-mobile-full" style="background: #137FEC; color: white; border: none; border-radius: 2px; padding: 10px 35px; font-size: 14px; font-weight: 500; cursor: pointer;">Mua lại</button>
+                                <button class="btn-mobile-full" style="background: #fff; color: #555; border: 1px solid rgba(0,0,0,.09); border-radius: 2px; padding: 10px 20px; font-size: 14px; cursor: pointer;">Liên hệ người bán</button>
                             </div>
                         </div>
                     </div>

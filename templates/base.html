@@ -35,18 +35,25 @@
     </script>
 </head>
 <body>
+    
+    {% if not is_admin_page %}
     <header class="header">
         <div class="header-top">
             <div class="header-left">
+                <button class="btn-menu-mobile" id="mobileMenuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
                 <a href="{% url 'home' %}" class="logo-hani">
                     <img src="{% static 'images/logo.png' %}?v=1.2" alt="Hani Logo" class="logo-img">
                 </a>
             </div>
             <div class="header-right">
-                <form action="{% url 'search' %}" method="GET" class="search-bar">
-                    <input type="text" name="q" placeholder="Tìm sản phẩm...">
-                    <button type="submit" class="btn-search"><i class="fas fa-search"></i></button>
-                </form>
+                <div class="search-container-mobile">
+                    <form action="{% url 'search' %}" method="GET" class="search-bar">
+                        <input type="text" name="q" placeholder="Tìm sản phẩm...">
+                        <button type="submit" class="btn-search"><i class="fas fa-search"></i></button>
+                    </form>
+                </div>
                 <button class="btn-cart-icon" onclick="openCart()">
                     <img src="{% static 'images/cart_icon.png' %}" alt="Cart" style="width: 26px; height: auto; display: block;">
                     <span class="cart-badge {% if cart_count > 0 %}show{% endif %}" id="cart-badge">{{ cart_count }}</span>
@@ -56,31 +63,48 @@
                     <div id="userMenuToggle" onclick="toggleUserMenu(event)" style="cursor: pointer; display: flex; align-items: center; gap: 8px; padding: 5px 0;">
                         <img src="{% static 'images/user_icon.png' %}" alt="User" style="width: 26px; height: 26px; object-fit: contain; display: block;">
                         <span class="username-display" style="font-weight: 500; font-size: 15px; color: #333;">{{ user.username }}</span>
-                        <i class="fas fa-chevron-down" style="font-size: 11px; margin-left: 2px; color: #555;"></i>
+                        <i class="fas fa-chevron-down chevron-user" style="font-size: 11px; margin-left: 2px; color: #555;"></i>
                     </div>
                     {% if user.is_staff %}
-                        <a href="/admin/" target="_blank" style="margin-left:10px; color:var(--green);" title="Quản trị"><i class="fas fa-user-shield"></i></a>
+                        <a href="/admin/" target="_blank" class="admin-icon" style="margin-left:10px; color:var(--green);" title="Quản trị"><i class="fas fa-user-shield"></i></a>
                     {% endif %}
                     
-                    <div id="userMenuDropdown" style="display: none; position: absolute; right: 0; top: 100%; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 4px; min-width: 220px; padding: 8px 0; z-index: 1000; margin-top: 5px;">
-                        <a href="{% url 'profile' %}" style="display: flex; align-items: center; padding: 12px 20px; color: #333; text-decoration: none; font-size: 15px; font-weight: 500;">
+                    <div id="userMenuDropdown" class="user-dropdown-menu">
+                        <a href="{% url 'profile' %}" class="dropdown-link">
                             <img src="{% static 'images/user_icon.png' %}" alt="User" style="width: 18px; height: 18px; object-fit: contain; margin-right: 12px;"> Thông tin cá nhân
                         </a>
-                        <div style="border-top: 1px solid #f0f0f0; margin: 4px 0;"></div>
-                        <a href="{% url 'logout' %}" style="display: flex; align-items: center; padding: 12px 20px; color: #e53935; text-decoration: none; font-size: 15px; font-weight: 500;">
+                        {% if user.is_staff %}
+                        <a href="{% url 'admin_orders' %}" class="dropdown-link" style="background: #f0f7ff;">
+                            <i class="fas fa-tasks" style="margin-right: 12px; font-size: 18px; width: 20px; text-align: center; color: #137FEC;"></i> <strong>Quản lý đơn hàng</strong>
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        {% endif %}
+                        
+                        <a href="{% url 'logout' %}" class="dropdown-link logout-link">
                             <i class="fas fa-sign-out-alt" style="margin-right: 12px; font-size: 18px; width: 20px; text-align: center;"></i> Đăng xuất
                         </a>
                     </div>
                 </div>
                 {% else %}
                 <div class="auth-area">
-                    <img src="{% static 'images/user_icon.png' %}" alt="User" style="width: 26px; height: 26px; object-fit: contain; margin-right: 5px;">
-                    <span><a href="{% url 'login' %}">Đăng nhập</a> | <a href="{% url 'register' %}">Đăng ký</a></span>
+                    <img src="{% static 'images/user_icon.png' %}" alt="User" style="width: 26px; height: 26px; object-fit: contain;">
+                    <div class="auth-links">
+                        <a href="{% url 'login' %}">Đăng nhập</a>
+                        <span class="divider">|</span>
+                        <a href="{% url 'register' %}">Đăng ký</a>
+                    </div>
                 </div>
                 {% endif %}
             </div>
         </div>
-        <nav class="nav-bar">
+        <div class="nav-overlay" id="navOverlay"></div>
+        <nav class="nav-bar" id="navBar">
+            <div class="mobile-nav-header">
+                <span class="mobile-nav-logo">
+                    <img src="{% static 'images/logo.png' %}" alt="Hani Logo" style="height: 30px;">
+                </span>
+                <button class="btn-close-menu" id="closeMobileMenu"><i class="fas fa-times"></i></button>
+            </div>
             <span class="nav-item nav-highlight">HANI SHOPPING DAY</span>
             <a href="{% url 'home' %}" class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">TRANG CHỦ</a>
             <a href="{% url 'all_products_cat' 'san-pham-moi' %}" class="nav-item {% if category_slug == 'san-pham-moi' %}active{% endif %}">SẢN PHẨM MỚI</a>
@@ -90,6 +114,7 @@
             <a href="{% url 'all_products_cat' 'vay' %}" class="nav-item {% if category_slug == 'vay' %}active{% endif %}">VÁY</a>
         </nav>
     </header>
+    {% endif %}
 
     <!-- TOASTS -->
     <div class="toast-container" id="toast-container">
@@ -104,10 +129,12 @@
             </div>
             {% endfor %}
         {% endif %}
+        
     </div>
 
     <!-- CART SIDEBAR -->
     <div class="cart-overlay" id="cart-overlay" onclick="closeCart()"></div>
+    {% if not is_admin_page %}
     <div class="cart-sidebar" id="cart-sidebar">
         <div class="cart-header">
             <h3>Giỏ hàng (<span id="cart-count-sidebar">{{ cart_count }}</span>)</h3>
@@ -223,6 +250,7 @@
             <button class="btn-cart-checkout" onclick="location.href='{% url 'checkout' %}'">ĐẶT HÀNG</button>
         </div>
     </div>
+    {% endif %}
 
     <!-- CONTENT AREA -->
     <main class="page-content">
@@ -230,6 +258,8 @@
     </main>
 
     <!-- FOOTER -->
+    
+    {% if not is_admin_page %}
     <footer class="footer">
         <div class="footer-inner">
             <div class="footer-main">
@@ -296,6 +326,8 @@
             </div>
         </div>
     </footer>
+    {% endif %}
+    
  <!-- Truncated for brevity, just copying structural parts -->
 
     <script src="{% static 'js/app.js' %}?v=3.2"></script>

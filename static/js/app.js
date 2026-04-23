@@ -326,3 +326,37 @@ function showToast(type, product = null, message = '') {
     }, 4500);
 }
 
+
+
+// =================== MOBILE MENU ===================
+document.addEventListener('DOMContentLoaded', () => {
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const closeMobileMenu = document.getElementById('closeMobileMenu');
+    const navBar = document.getElementById('navBar');
+    const navOverlay = document.getElementById('navOverlay');
+
+    if (mobileMenuToggle && navBar && navOverlay) {
+        mobileMenuToggle.addEventListener('click', () => {
+            navBar.classList.add('open');
+            navOverlay.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        });
+
+        const closeMenu = () => {
+            navBar.classList.remove('open');
+            navOverlay.classList.remove('open');
+            document.body.style.overflow = '';
+        };
+
+        if (closeMobileMenu) {
+            closeMobileMenu.addEventListener('click', closeMenu);
+        }
+        navOverlay.addEventListener('click', closeMenu);
+        
+        // Ðóng menu khi nh?n vào link (d?i v?i single page apps ho?c anchors)
+        navBar.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', closeMenu);
+        });
+    }
+});
+

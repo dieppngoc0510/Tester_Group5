@@ -330,6 +330,120 @@
         line-height: 1.5;
         text-align: center;
     }
+
+    /* RESPONSIVE */
+    @media screen and (max-width: 768px) {
+        .shopee-container {
+            flex-direction: column;
+            padding: 0;
+        }
+
+        .shopee-sidebar {
+            width: 100%;
+            padding: 15px;
+            background: #fff;
+            margin-bottom: 5px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .shopee-user-info-section {
+            padding-bottom: 15px;
+            border-bottom: 1px dashed #eee;
+        }
+
+        .shopee-menu {
+            display: flex;
+            overflow-x: auto;
+            margin-top: 10px;
+            gap: 12px;
+            padding: 5px 0 15px;
+            scrollbar-width: none;
+        }
+        
+        .shopee-menu::-webkit-scrollbar { display: none; }
+
+        .shopee-menu-group {
+            margin-bottom: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .shopee-menu-title {
+            display: none;
+        }
+
+        .shopee-menu-links {
+            padding: 0;
+            display: flex;
+            gap: 8px;
+        }
+
+        .shopee-menu-links li {
+            margin-bottom: 0;
+        }
+
+        .shopee-menu-links a {
+            padding: 8px 16px;
+            background: var(--gray-100);
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            white-space: nowrap;
+            display: block;
+        }
+
+        .shopee-menu-links a.active {
+            background: #ee4d2d;
+            color: #fff;
+        }
+
+        .shopee-main {
+            margin-left: 0;
+            padding: 0 15px;
+        }
+
+        .shopee-main-body {
+            flex-direction: column-reverse;
+            padding-top: 20px;
+        }
+
+        .shopee-form-section {
+            width: 100%;
+            padding-right: 0;
+        }
+
+        .shopee-avatar-upload {
+            width: 100%;
+            border-left: none;
+            border-bottom: 1px solid #efefef;
+            padding-bottom: 30px;
+            margin-bottom: 20px;
+        }
+
+        .s-form-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .s-form-label {
+            width: 100%;
+            text-align: left;
+            padding-right: 0;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .s-form-control {
+            width: 100%;
+        }
+
+        .s-btn-save {
+            width: 100%;
+            margin-top: 20px;
+        }
+    }
 </style>
 
 <div class="shopee-wrapper">
@@ -410,7 +524,7 @@
                     <div class="s-form-row">
                         <div class="s-form-label">Số điện thoại</div>
                         <div class="s-form-control">
-                            <input type="text" name="phone" class="s-form-input" value="{{ profile.phone|default_if_none:'' }}">
+                            <input type="text" name="phone" class="s-form-input" value="{{ profile.phone|default_if_none:'' }}" pattern="[0-9]{10}" minlength="10" maxlength="10" title="Số điện thoại phải bao gồm đúng 10 chữ số">
                         </div>
                     </div>
 

@@ -33,29 +33,31 @@
         <form id="add-to-cart-form">
             {% csrf_token %}
             <input type="hidden" name="product_id" value="{{ product.id }}">
-            <div class="product-colors">
-                <p class="option-label">Màu sắc:</p>
-                <div class="color-options">
-                    {% for color in product.colors %}
-                    <label class="color-option-wrapper">
-                        <input type="radio" name="color" value="{{ color.name }}" style="display:none;">
-                        <div class="color-option" 
-                             style="background:{{ color.hex }}" 
-                             title="{{ color.name }}"
-                             onclick="selectColor(this)"></div>
-                    </label>
-                    {% endfor %}
+            <div class="product-variants-wrapper">
+                <div class="product-colors">
+                    <p class="option-label">Màu sắc:</p>
+                    <div class="color-options">
+                        {% for color in product.colors %}
+                        <label class="color-option-wrapper">
+                            <input type="radio" name="color" value="{{ color.name }}" style="display:none;">
+                            <div class="color-option" 
+                                 style="background:{{ color.hex }}" 
+                                 title="{{ color.name }}"
+                                 onclick="selectColor(this)"></div>
+                        </label>
+                        {% endfor %}
+                    </div>
                 </div>
-            </div>
-            <div class="product-sizes">
-                <p class="option-label">Kích thước:</p>
-                <div class="size-options">
-                    {% for size in product.sizes %}
-                    <label class="size-option-wrapper">
-                        <input type="radio" name="size" value="{{ size }}" style="display:none;">
-                        <div class="size-option" onclick="selectSize(this)">{{ size }}</div>
-                    </label>
-                    {% endfor %}
+                <div class="product-sizes">
+                    <p class="option-label">Kích thước:</p>
+                    <div class="size-options">
+                        {% for size in product.sizes %}
+                        <label class="size-option-wrapper">
+                            <input type="radio" name="size" value="{{ size }}" style="display:none;">
+                            <div class="size-option" onclick="selectSize(this)">{{ size }}</div>
+                        </label>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
             <button type="button" class="btn-add-to-cart" onclick="submitAddToCart()">THÊM VÀO GIỎ HÀNG</button>

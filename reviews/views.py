@@ -1,11 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseForbidden
 from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout, update_session_auth_hash
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
+from django.db.models import Q
 from .models import Category, Product, UserProfile, Order, OrderItem, CartItem
+from functools import wraps
 import json
 
 # =================== DỮ LIỆU SẢN PHẨM ===================
@@ -219,6 +221,9 @@ def format_price(price):
 # =================== VIEWS ===================
 
 def home(request):
+    if request.user.is_authenticated and request.user.is_staff:
+        return redirect('admin_dashboard')
+        
     all_p = get_all_products_from_db()
     winter_images = ['sp1.png', 'sp2.png', 'sp3.png', 'sp4.png', 'sp5.png']
     
@@ -254,7 +259,15 @@ def all_products(request, category=None):
     all_p = get_all_products_from_db()
     
     if category:
-        filtered = [p for p in all_p if category in p['category']]
+        if category == 'ao':
+            filtered = [p for p in all_p if 'áo' in p['name'].lower()]
+        elif category == 'quan':
+            filtered = [p for p in all_p if 'quần' in p['name'].lower()]
+        elif category == 'vay':
+            filtered = [p for p in all_p if 'váy' in p['name'].lower() or 'đầm' in p['name'].lower()]
+        else:
+            filtered = [p for p in all_p if category in p['category']]
+            
         filtered = sorted(filtered, key=lambda x: x['id'])
         title = category_names.get(category, 'TẤT CẢ SẢN PHẨM')
         breadcrumb = title
@@ -364,7 +377,7 @@ def add_to_cart(request):
 def cart_data(request):
     items = []
     if request.user.is_authenticated:
-        db_items = CartItem.objects.filter(user=request.user)
+        db_items = CartItem.objects.filter(user=request.user).order_by('-id')
         for di in db_items:
             product = get_product_by_id(di.product_id)
             if product:
@@ -383,7 +396,7 @@ def cart_data(request):
                 })
     else:
         cart = request.session.get('cart', [])
-        for item in cart:
+        for item in reversed(cart):
             product = get_product_by_id(item['product_id'])
             if product:
                 items.append({
@@ -586,6 +599,9 @@ def confirm_order(request):
                 quantity=item['qty'],
                 price=item['price']
             )
+            # Deduct stock
+            item['product_obj'].stock -= item['qty']
+            item['product_obj'].save()
 
         # Xóa các sản phẩm đã đặt khỏi giỏ hàng và xóa mã giảm giá
         if request.user.is_authenticated:
@@ -612,6 +628,8 @@ def order_success(request):
 @never_cache
 def login(request):
     if request.user.is_authenticated:
+        if request.user.is_staff:
+            return redirect('admin_dashboard')
         return redirect('home')
 
     if request.method == 'POST':
@@ -645,8 +663,13 @@ def login(request):
             request.session['cart'] = [] # Xóa guest cart sau khi sync
             
             messages.success(request, f'Xin chào, {user.first_name if user.first_name else user.username}!')
-            response = redirect('home')
-            # Set marker cookie for JS to detect fresh login
+            
+            if user.is_staff:
+                response = redirect('admin_dashboard')
+            else:
+                response = redirect('home')
+            
+            # Set marker cookie for JS to detect fresh login (important for heartbeat logic in base.html)
             response.set_cookie('just_logged_in', '1', max_age=30) 
             return response
         else:
@@ -656,6 +679,8 @@ def login(request):
 @never_cache
 def register(request):
     if request.user.is_authenticated:
+        if request.user.is_staff:
+            return redirect('admin_dashboard')
         return redirect('home')
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
@@ -664,7 +689,9 @@ def register(request):
         phone = request.POST.get('phone', '').strip()
         password = request.POST.get('password', '').strip()
         
-        if User.objects.filter(username=username).exists():
+        if len(phone) != 10 or not phone.isdigit():
+            messages.error(request, 'Số điện thoại phải bao gồm đúng 10 chữ số!')
+        elif User.objects.filter(username=username).exists():
             messages.error(request, 'Tên đăng nhập này đã tồn tại!')
         elif UserProfile.objects.filter(phone=phone).exists():
             messages.error(request, 'Số điện thoại này đã được sử dụng!')
@@ -714,6 +741,11 @@ def profile(request):
         birthdate = request.POST.get('birthdate', '')
         address = request.POST.get('address', '').strip()
         gender = request.POST.get('gender', 'nu')
+
+        if len(phone) != 10 or not phone.isdigit():
+            messages.error(request, 'Số điện thoại phải bao gồm đúng 10 chữ số!')
+            return redirect('profile')
+            
 
         # Cập nhật thông tin cốt lõi vào Database
         request.user.first_name = first_name
@@ -805,3 +837,7 @@ def change_password(request):
         'user': request.user,
         'cart_count': sum(item['qty'] for item in request.session.get('cart', []))
     })
+
+
+from django.db.models import Q
+
