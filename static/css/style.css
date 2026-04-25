@@ -1530,7 +1530,7 @@ input {
     border: none;
     padding: 0;
     min-width: 330px;
-    animation: toastIn 0.4s ease, toastOut 0.4s ease 4s forwards;
+    animation: toastIn 0.4s ease, toastOut 0.4s ease 2s forwards;
 }
 
 .toast-content {

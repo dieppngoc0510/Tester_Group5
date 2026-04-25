@@ -88,7 +88,14 @@ PRODUCTS = [
         'name': 'Đầm dự tiệc',
         'code': 'SP000000036',
         'price': 250000,
+        'old_price': 399000,
         'image': 'sp6.jpg',
+        'colors': [
+            {'name': 'Đen', 'hex': '#000000'},
+            {'name': 'Đỏ', 'hex': '#FF0000'},
+            {'name': 'Vàng kim', 'hex': '#FFD700'}
+        ],
+        'sizes': ['S', 'M', 'L'],
         'category': ['san-pham-moi', 'bo-suu-tap-he', 'ao']
     },
     {
@@ -96,7 +103,14 @@ PRODUCTS = [
         'name': 'Váy ngắn basic thanh lịch',
         'code': 'SP000000037',
         'price': 320000,
+        'old_price': 450000,
         'image': 'sp7.jpg',
+        'colors': [
+            {'name': 'Xanh', 'hex': '#0000FF'},
+            {'name': 'Trắng', 'hex': '#FFFFFF'},
+            {'name': 'Xanh lá', 'hex': '#008000'}
+        ],
+        'sizes': ['S', 'M', 'L'],
         'category': ['san-pham-moi', 'bo-suu-tap-he', 'quan']
     },
     {
@@ -104,7 +118,14 @@ PRODUCTS = [
         'name': 'Váy maxi đi biển',
         'code': 'SP000000038',
         'price': 390000,
+        'old_price': 550000,
         'image': 'sp8.jpg',
+        'colors': [
+            {'name': 'Hồng', 'hex': '#FFC0CB'},
+            {'name': 'Vàng', 'hex': '#FFFF00'},
+            {'name': 'Xanh biển', 'hex': '#00BFFF'}
+        ],
+        'sizes': ['S', 'M', 'L'],
         'category': ['san-pham-moi', 'bo-suu-tap-he', 'ao']
     },
     {
@@ -112,7 +133,14 @@ PRODUCTS = [
         'name': 'Áo sơ mi kèm nơ',
         'code': 'SP000000039',
         'price': 450000,
+        'old_price': 599000,
         'image': 'sp9.jpg',
+        'colors': [
+            {'name': 'Trắng', 'hex': '#FFFFFF'},
+            {'name': 'Xám', 'hex': '#808080'},
+            {'name': 'Xanh nhạt', 'hex': '#ADD8E6'}
+        ],
+        'sizes': ['S', 'M', 'L'],
         'category': ['san-pham-moi', 'bo-suu-tap-he', 'vay']
     },
     {
@@ -120,7 +148,14 @@ PRODUCTS = [
         'name': 'Áo kiểu yếm tiểu thư',
         'code': 'SP000000040',
         'price': 220000,
+        'old_price': 350000,
         'image': 'sp10.jpg',
+        'colors': [
+            {'name': 'Kem', 'hex': '#F5F5DC'},
+            {'name': 'Xanh nhạt', 'hex': '#ADD8E6'},
+            {'name': 'Hồng phấn', 'hex': '#FFB6C1'}
+        ],
+        'sizes': ['S', 'M', 'L'],
         'category': ['san-pham-moi', 'bo-suu-tap-he', 'ao']
     },
     {
@@ -128,7 +163,14 @@ PRODUCTS = [
         'name': 'Quần jean form rộng',
         'code': 'SP000000041',
         'price': 550000,
+        'old_price': 750000,
         'image': 'sp11.jpg',
+        'colors': [
+            {'name': 'Xanh đậm', 'hex': '#00008B'},
+            {'name': 'Xanh sáng', 'hex': '#87CEEB'},
+            {'name': 'Xanh đen', 'hex': '#2F4F4F'}
+        ],
+        'sizes': ['S', 'M', 'L'],
         'category': ['san-pham-moi', 'bo-suu-tap-he', 'quan']
     },
     {
@@ -136,7 +178,14 @@ PRODUCTS = [
         'name': 'Áo Cowboys nữ năng động',
         'code': 'SP000000042',
         'price': 350000,
+        'old_price': 480000,
         'image': 'sp12.jpg',
+        'colors': [
+            {'name': 'Nâu', 'hex': '#A52A2A'},
+            {'name': 'Đen', 'hex': '#000000'},
+            {'name': 'Bò', 'hex': '#D2B48C'}
+        ],
+        'sizes': ['S', 'M', 'L'],
         'category': ['san-pham-moi', 'bo-suu-tap-he', 'ao']
     },
     {
@@ -144,7 +193,14 @@ PRODUCTS = [
         'name': 'Chân váy dài caro',
         'code': 'SP000000043',
         'price': 290000,
+        'old_price': 420000,
         'image': 'sp13.jpg',
+        'colors': [
+            {'name': 'Caro Đỏ', 'hex': '#EE4D2D'},
+            {'name': 'Caro Xanh', 'hex': '#008080'},
+            {'name': 'Caro Đen', 'hex': '#000000'}
+        ],
+        'sizes': ['S', 'M', 'L'],
         'category': ['san-pham-moi', 'bo-suu-tap-he', 'vay']
     },
     {
@@ -152,7 +208,14 @@ PRODUCTS = [
         'name': 'Set áo và quần jean năng động',
         'code': 'SP000000044',
         'price': 420000,
+        'old_price': 599000,
         'image': 'sp14.jpg',
+        'colors': [
+            {'name': 'Trắng', 'hex': '#FFFFFF'},
+            {'name': 'Xanh jean', 'hex': '#5F9EA0'},
+            {'name': 'Xám khói', 'hex': '#708090'}
+        ],
+        'sizes': ['S', 'M', 'L'],
         'category': ['san-pham-moi', 'bo-suu-tap-he', 'ao']
     },
     {
@@ -160,7 +223,14 @@ PRODUCTS = [
         'name': 'Set váy thể thao',
         'code': 'SP000000045',
         'price': 590000,
+        'old_price': 799000,
         'image': 'sp15.jpg',
+        'colors': [
+            {'name': 'Xám', 'hex': '#808080'},
+            {'name': 'Xanh navy', 'hex': '#000080'},
+            {'name': 'Đen', 'hex': '#000000'}
+        ],
+        'sizes': ['S', 'M', 'L'],
         'category': ['san-pham-moi', 'bo-suu-tap-he', 'vay']
     }
 ]
@@ -217,6 +287,20 @@ def format_price(price):
         return f"{int(price):,.0f} đ".replace(",", ".")
     except:
         return "0 đ"
+
+def calculate_discount(code, subtotal):
+    if not code:
+        return 0
+    code = code.upper()
+    if code == 'BLACKFRI50':
+        return int(subtotal * 0.5) if subtotal >= 999000 else 0
+    elif code == 'FLASH20':
+        return int(subtotal * 0.2)
+    elif code == 'FREESHIP':
+        return int(subtotal * 0.3) if subtotal >= 199000 else 0
+    elif code == 'NEWUSER50':
+        return 50000
+    return 0
 
 # =================== VIEWS ===================
 
@@ -416,10 +500,16 @@ def cart_data(request):
     selected_total = sum(i['price'] * i['qty'] for i in items if i['selected'])
     selected_count = sum(1 for i in items if i['selected'])
 
+    applied_coupon = request.session.get('applied_coupon', '')
+    discount = calculate_discount(applied_coupon, selected_total)
+    final_total = max(0, selected_total - discount)
+
     return JsonResponse({
         'items': items,
-        'total': selected_total,
-        'total_formatted': format_price(selected_total),
+        'subtotal': selected_total,
+        'discount': discount,
+        'total': final_total,
+        'total_formatted': format_price(final_total),
         'count': len(items),
         'selected_count': selected_count
     })
@@ -527,7 +617,7 @@ def checkout(request):
     subtotal = sum(i['product']['price'] * i['qty'] for i in selected_items)
 
     applied_coupon = request.session.get('applied_coupon', '')
-    discount = 50000 if applied_coupon else 0
+    discount = calculate_discount(applied_coupon, subtotal)
     shipping = 0
     total = max(0, subtotal - discount + shipping)
     user_profile, created = UserProfile.objects.get_or_create(user=request.user)
@@ -576,7 +666,7 @@ def confirm_order(request):
             })
 
         coupon_code = request.session.get('applied_coupon', '')
-        discount = 50000 if coupon_code else 0
+        discount = calculate_discount(coupon_code, subtotal)
         total = max(0, subtotal - discount)
 
         # Tạo đơn hàng

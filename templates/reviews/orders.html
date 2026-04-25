@@ -536,7 +536,10 @@
                             <img src="{% static 'images/' %}{{ item.product.image_name }}" class="order-img-mobile" style="width: 120px; min-height: 110px; object-fit: cover;" onerror="this.src='{% static 'images/sp10.png' %}'" alt="{{ item.product_name }}">
                             <div class="order-content-mobile" style="flex: 1; padding: 15px 20px; display: flex; flex-direction: column; justify-content: center;">
                                 <div style="display: flex; justify-content: space-between;">
-                                    <div style="font-size: 14px; color: #333; font-weight: 500; margin-bottom: 5px;">{{ item.product_name }}</div>
+                                    <div style="font-size: 14px; color: #333; font-weight: 500; margin-bottom: 5px;">
+                                        {{ item.product_name }} 
+                                        <span style="font-size: 12px; color: #888; font-weight: 400; margin-left: 10px;">ID: HD{{ order.id|stringformat:"08d" }}</span>
+                                    </div>
                                     <div style="font-size: 13px; color: #137FEC; font-weight: 600;">{{ order.get_status_display }}</div>
                                 </div>
                                 <div style="font-size: 12px; color: #888; margin-bottom: 15px;">Phân loại hàng: {{ item.color }} | {{ item.size }}</div>

@@ -26,7 +26,9 @@
         <h1 class="product-detail-name">{{ product.name }}</h1>
         <p class="product-detail-code">Mã sản phẩm: {{ product.code }}</p>
         <div class="product-price-detail">
+            {% if product.old_price %}
             <span class="old-price">{{ product.old_price|format_price }}</span>
+            {% endif %}
             <span class="current-price">{{ product.price|format_price }}</span>
         </div>
 

@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-+st++jyn*iqi75yv8osgkz@^a-_z&f3u0@cs=bh9b03@mzy&qa
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['joyfully-sneak-fling.ngrok-free.dev', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework.authtoken',
     'reviews',
     'orders',
 ]

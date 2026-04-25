@@ -239,6 +239,7 @@
                             document.getElementById('selected-coupon-label').style.fontWeight = '700';
                             toggleCouponList();
                             showToast('apply-coupon', { name: "Đã áp dụng mã: " + code });
+                            if (typeof updateCartUI === 'function') updateCartUI();
                         }
                     });
                 }

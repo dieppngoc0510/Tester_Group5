@@ -1,7 +1,3 @@
-/* ============================================
-   HANI SHOPPING - COOKIE / JS (DJANGO VERSION)
-   ============================================ */
-
 let currentSlide = 0;
 let sliderInterval = null;
 
@@ -320,10 +316,10 @@ function showToast(type, product = null, message = '') {
     const toastElement = div.firstElementChild;
     container.appendChild(toastElement);
     
-    // Auto remove after 4.5s
+    // Auto remove after 2.5s
     setTimeout(() => { 
         if(container.contains(toastElement)) toastElement.remove(); 
-    }, 4500);
+    }, 2500);
 }
 
 
@@ -353,7 +349,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         navOverlay.addEventListener('click', closeMenu);
         
-        // Ðóng menu khi nh?n vào link (d?i v?i single page apps ho?c anchors)
+        // ï¿½ï¿½ng menu khi nh?n vï¿½o link (d?i v?i single page apps ho?c anchors)
         navBar.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', closeMenu);
         });

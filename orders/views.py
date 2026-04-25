@@ -243,7 +243,7 @@ def admin_create_order(request):
                 item['product'].stock -= item['qty']
                 item['product'].save()
                 
-            messages.success(request, f"Tạo đơn hàng #{order.id} thành công!")
+            messages.success(request, f"Tạo đơn hàng HD{order.id:08d} thành công!")
             return JsonResponse({"success": True, "order_id": order.id, "name": fullname})
         except Exception as e:
             return JsonResponse({"success": False, "error": str(e)})
@@ -328,7 +328,7 @@ def admin_edit_order(request, order_id):
             order.discount_amount = discount_amount
             order.save()
             
-            messages.success(request, f"Cập nhật đơn hàng #{order.id} thành công!")
+            messages.success(request, f"Cập nhật đơn hàng HD{order.id:08d} thành công!")
             return JsonResponse({"success": True, "name": fullname})
         except Exception as e:
             return JsonResponse({"success": False, "error": str(e)})
@@ -339,7 +339,7 @@ def admin_delete_order(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     order_id_copy = order.id
     order.delete()
-    messages.success(request, f"Xóa đơn hàng #{order_id_copy} thành công!")
+    messages.success(request, f"Xóa đơn hàng HD{order_id_copy:08d} thành công!")
     return redirect('admin_orders')
 
 @admin_required

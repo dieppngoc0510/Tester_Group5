@@ -848,7 +848,7 @@
                     <tbody>
                         {% for order in orders %}
                         <tr>
-                            <td><a href="#" class="order-id-blue" onclick="viewOrderDetail({{ order.id }})">HD0000000{{ order.id }}</a></td>
+                            <td><a href="#" class="order-id-blue" onclick="viewOrderDetail({{ order.id }})">HD{{ order.id|stringformat:"08d" }}</a></td>
                             <td>{{ order.user.first_name|default:order.user.username }}</td>
                             <td>{{ order.created_at|date:"d/m/Y H:i" }}</td>
                             <td class="order-price-bold">{{ order.total_amount|format_price }}</td>
@@ -1437,7 +1437,7 @@
         setTimeout(() => {
             toast.style.transform = 'translateX(120%)';
             setTimeout(() => toast.remove(), 400);
-        }, 4000);
+        }, 2000);
     }
     function viewOrderDetail(id) {
         document.getElementById('dt-content').innerHTML = '<div style="text-align:center; padding:50px; color:#94a3b8;"><i class="fas fa-spinner fa-spin fa-3x"></i></div>';

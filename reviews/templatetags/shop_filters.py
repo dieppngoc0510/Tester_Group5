@@ -5,8 +5,10 @@ register = template.Library()
 
 @register.filter
 def format_price(value):
+    if value is None:
+        return ""
     try:
-        return f"{value:,.0f} đ".replace(",", ".")
+        return f"{int(value):,.0f} đ".replace(",", ".")
     except (ValueError, TypeError):
         return value
 
