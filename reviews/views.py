@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponseForbidden
 from django.contrib import messages
-from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout, update_session_auth_hash
+from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.models import User
+from rest_framework.authtoken.models import Token
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
 from django.db.models import Q
@@ -675,7 +676,7 @@ def confirm_order(request):
             total_amount=total,
             coupon_code=coupon_code,
             discount_amount=discount,
-            status='shipping'  # Mặc định là đang vận chuyển sau khi đặt
+            status='pending'  # Đơn mới phải chờ admin duyệt
         )
 
         # Tạo chi tiết đơn hàng
@@ -779,32 +780,71 @@ def register(request):
         phone = request.POST.get('phone', '').strip()
         password = request.POST.get('password', '').strip()
         
-        if len(phone) != 10 or not phone.isdigit():
-            messages.error(request, 'Số điện thoại phải bao gồm đúng 10 chữ số!')
+        has_error = False
+        
+        # 1. Kiểm tra các trường bắt buộc (Task 2)
+        if not username:
+            messages.error(request, 'Vui lòng nhập tên đăng nhập!')
+            has_error = True
         elif User.objects.filter(username=username).exists():
+            # 2. Kiểm tra tên đăng nhập tồn tại (Task 1)
             messages.error(request, 'Tên đăng nhập này đã tồn tại!')
+            has_error = True
+            
+        if not fullname:
+            messages.error(request, 'Vui lòng nhập họ và tên!')
+            has_error = True
+            
+        if not email:
+            messages.error(request, 'Vui lòng nhập email!')
+            has_error = True
+            
+        if not phone:
+            messages.error(request, 'Vui lòng nhập số điện thoại!')
+            has_error = True
+        elif len(phone) != 10 or not phone.isdigit():
+            messages.error(request, 'Số điện thoại phải bao gồm đúng 10 chữ số!')
+            has_error = True
         elif UserProfile.objects.filter(phone=phone).exists():
             messages.error(request, 'Số điện thoại này đã được sử dụng!')
-        else:
-            user = User.objects.create_user(username=username, password=password)
-            user.first_name = fullname
-            user.email = email
-            user.save()
+            has_error = True
             
-            # Tạo profile và lưu thông tin ngay lập tức vào DB
-            UserProfile.objects.create(
-                user=user,
-                phone=phone
-            )
+        if not password:
+            messages.error(request, 'Vui lòng nhập mật khẩu!')
+            has_error = True
+
+        if has_error:
+            return render(request, 'reviews/register.html', {
+                'username': username,
+                'fullname': fullname,
+                'email': email,
+                'phone': phone,
+            })
             
-            auth_login(request, user)
-            messages.success(request, f'Đăng ký thành công! Xin chào, {username}!')
-            response = redirect('home')
-            response.set_cookie('just_logged_in', '1', max_age=30)
-            return response
+        # Nếu không có lỗi, tiến hành tạo user
+        user = User.objects.create_user(username=username, password=password)
+        user.first_name = fullname
+        user.email = email
+        user.save()
+        
+        # Tạo profile và lưu thông tin ngay lập tức vào DB
+        UserProfile.objects.create(
+            user=user,
+            phone=phone
+        )
+        
+        auth_login(request, user)
+        messages.success(request, f'Đăng ký thành công! Xin chào, {username}!')
+        response = redirect('home')
+        response.set_cookie('just_logged_in', '1', max_age=30)
+        return response
     return render(request, 'reviews/register.html')
 
 def logout(request):
+    if request.user.is_authenticated:
+        # Xóa Token khi đăng xuất khỏi web để đảm bảo bảo mật
+        Token.objects.filter(user=request.user).delete()
+        
     auth_logout(request)
     if not request.GET.get('silent'):
         messages.success(request, 'Đăng xuất thành công!')
@@ -828,12 +868,40 @@ def profile(request):
         first_name = request.POST.get('first_name', '').strip()
         email = request.POST.get('email', '').strip()
         phone = request.POST.get('phone', '').strip()
-        birthdate = request.POST.get('birthdate', '')
+        birthdate = request.POST.get('birthdate', '').strip()
         address = request.POST.get('address', '').strip()
-        gender = request.POST.get('gender', 'nu')
+        gender = request.POST.get('gender', '').strip()
+
+        if not first_name:
+            messages.error(request, 'Họ và tên không được để trống')
+            return redirect('profile')
+        
+        if not email:
+            messages.error(request, 'Email không được để trống')
+            return redirect('profile')
+
+        if User.objects.filter(email=email).exclude(id=request.user.id).exists():
+            messages.error(request, 'Email này đã được sử dụng bởi tài khoản khác')
+            return redirect('profile')
+        
+        if not phone:
+            messages.error(request, 'Số điện thoại không được để trống')
+            return redirect('profile')
 
         if len(phone) != 10 or not phone.isdigit():
             messages.error(request, 'Số điện thoại phải bao gồm đúng 10 chữ số!')
+            return redirect('profile')
+
+        if not birthdate:
+            messages.error(request, 'Ngày sinh không được để trống')
+            return redirect('profile')
+
+        if not address:
+            messages.error(request, 'Địa chỉ không được để trống')
+            return redirect('profile')
+
+        if not gender:
+            messages.error(request, 'Giới tính không được để trống')
             return redirect('profile')
             
 
@@ -898,10 +966,23 @@ def change_password(request):
         current_password = request.POST.get('current_password', '')
         new_password = request.POST.get('new_password', '')
         confirm_password = request.POST.get('confirm_password', '')
+
+        has_error = False
+        if not current_password:
+            messages.error(request, 'Vui lòng nhập mật khẩu hiện tại')
+            has_error = True
+        if not new_password:
+            messages.error(request, 'Vui lòng nhập mật khẩu mới')
+            has_error = True
+        if not confirm_password:
+            messages.error(request, 'Vui lòng xác nhận mật khẩu mới')
+            has_error = True
+        if has_error:
+            return redirect('change_password')
         
         # Kiểm tra mật khẩu hiện tại
         if not request.user.check_password(current_password):
-            messages.error(request, 'Mật khẩu hiện tại không chính xác.')
+            messages.error(request, 'Mật khẩu hiện tại không đúng.')
             return redirect('change_password')
             
         # Kiểm tra mật khẩu mới khớp nhau
@@ -912,16 +993,19 @@ def change_password(request):
         if len(new_password) < 6:
             messages.error(request, 'Mật khẩu mới phải có ít nhất 6 ký tự.')
             return redirect('change_password')
+        
+        if request.user.check_password(new_password):
+            messages.error(request, 'Mật khẩu mới không được trùng mật khẩu hiện tại')
+            return redirect('change_password')
 
         # Thực hiện đổi mật khẩu
         request.user.set_password(new_password)
         request.user.save()
         
-        # Giữ cho user không bị đăng xuất sau khi đổi pass
-        update_session_auth_hash(request, request.user)
-        
+        # Bắt buộc đăng nhập lại bằng mật khẩu mới
+        auth_logout(request)
         messages.success(request, 'Cập nhật mật khẩu thành công!')
-        return redirect('profile')
+        return redirect('login')
         
     return render(request, 'reviews/change_password.html', {
         'user': request.user,

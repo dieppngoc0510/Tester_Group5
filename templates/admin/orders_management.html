@@ -1153,11 +1153,25 @@
 <script>
     function openModal(id) { document.getElementById(id).style.display = 'flex'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    function getRowStock(row) {
+        const stockCell = row ? row.querySelector('.row-stock') : null;
+        const stock = stockCell ? parseInt(stockCell.innerText, 10) : 0;
+        return Number.isNaN(stock) ? 0 : stock;
+    }
+    function showStockLimitWarning(maxStock) {
+        alert(`Số lượng vượt tồn kho. Tồn kho hiện tại chỉ còn ${maxStock}.`);
+    }
     function updateQty(btn, delta) {
+        let row = btn.closest('tr');
         let input = btn.parentElement.querySelector('.stepper-val');
         let hiddenInput = btn.parentElement.querySelector('.hidden-qty');
         let val = parseInt(input.innerText) + delta;
+        let maxStock = getRowStock(row);
         if (val < 1) val = 1;
+        if (val > maxStock) {
+            val = Math.max(1, maxStock);
+            showStockLimitWarning(maxStock);
+        }
         input.innerText = val;
         if(hiddenInput) hiddenInput.value = val;
         updateTotal();
@@ -1311,6 +1325,16 @@
             tr.dataset.price = product.price;
             tr.querySelector('.row-stock').innerText = product.stock;
             tr.querySelector('.row-price-text').innerText = product.price.toLocaleString() + ' đ';
+            const qtyEl = tr.querySelector('.stepper-val');
+            const qtyHidden = tr.querySelector('.hidden-qty');
+            const currentQty = qtyEl ? parseInt(qtyEl.innerText, 10) : 1;
+            const maxStock = parseInt(product.stock, 10) || 0;
+            if (currentQty > maxStock) {
+                const adjustedQty = Math.max(1, maxStock);
+                if (qtyEl) qtyEl.innerText = adjustedQty;
+                if (qtyHidden) qtyHidden.value = adjustedQty;
+                showStockLimitWarning(maxStock);
+            }
             
             if (tr.closest('#create-order-tbody')) {
                 updateTotal();
@@ -1641,10 +1665,16 @@
     }
 
     function updateQtyEdit(btn, delta) {
+        let row = btn.closest('tr');
         let input = btn.parentElement.querySelector('.stepper-val');
         let hiddenInput = btn.parentElement.querySelector('.hidden-qty');
         let val = parseInt(input.innerText) + delta;
+        let maxStock = getRowStock(row);
         if (val < 1) val = 1;
+        if (val > maxStock) {
+            val = Math.max(1, maxStock);
+            showStockLimitWarning(maxStock);
+        }
         input.innerText = val;
         if(hiddenInput) hiddenInput.value = val;
         updateTotalEdit();

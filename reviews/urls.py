@@ -10,6 +10,7 @@ router.register(r'orders', api_views.OrderViewSet)
 urlpatterns = [
     path('api/', include(router.urls)),
     path('api/login', api_views.Login.as_view(), name='api_login'),
+    path('api/logout', api_views.Logout.as_view(), name='api_logout'),
     path('', views.home, name='home'),
     path('products/', views.all_products, name='all_products'),
     path('products/<str:category>/', views.all_products, name='all_products_cat'),

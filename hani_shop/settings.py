@@ -27,6 +27,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['joyfully-sneak-fling.ngrok-free.dev', 'localhost', '127.0.0.1']
 
+CSRF_TRUSTED_ORIGINS = ['https://joyfully-sneak-fling.ngrok-free.dev']
+
 
 # Application definition
 

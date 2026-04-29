@@ -9,16 +9,16 @@
     <form action="{% url 'register' %}" method="POST" class="auth-form">
         {% csrf_token %}
         <div class="form-group">
-            <input type="text" name="username" placeholder="Tên đăng nhập" required>
+            <input type="text" name="username" placeholder="Tên đăng nhập" value="{{ username|default:'' }}" required>
         </div>
         <div class="form-group">
-            <input type="text" name="fullname" placeholder="Họ và tên" required>
+            <input type="text" name="fullname" placeholder="Họ và tên" value="{{ fullname|default:'' }}" required>
         </div>
         <div class="form-group">
-            <input type="email" name="email" placeholder="Email" required>
+            <input type="email" name="email" placeholder="Email" value="{{ email|default:'' }}" required>
         </div>
         <div class="form-group">
-            <input type="tel" name="phone" placeholder="Số điện thoại" pattern="[0-9]{10}" minlength="10" maxlength="10" title="Số điện thoại phải gồm 10 chữ số" required>
+            <input type="tel" name="phone" placeholder="Số điện thoại" value="{{ phone|default:'' }}" pattern="[0-9]{10}" minlength="10" maxlength="10" title="Số điện thoại phải gồm 10 chữ số" required>
         </div>
         <div class="form-group">
             <input type="password" name="password" placeholder="Mật khẩu" required>

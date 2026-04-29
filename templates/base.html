@@ -7,7 +7,15 @@
     <title>{% block title %}HANI STUDIO - Thời Trang Nữ{% endblock %}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2.0">
+    <link rel="stylesheet" href="https://unpkg.com/lenis@1.1.20/dist/lenis.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2.1">
+    <style>
+        @media screen and (max-width: 768px) {
+            .header-right .auth-links {
+                display: none !important;
+            }
+        }
+    </style>
     <script>
         function getCookie(name) {
             let cookieValue = null;
@@ -24,13 +32,22 @@
             return cookieValue;
         }
 
-        function toggleUserMenu(e) {
+        function toggleUserMenu(e, toggleEl) {
             if (e) e.stopPropagation();
-            var menuDrop = document.getElementById('userMenuDropdown');
-            if (menuDrop) {
-                var isVisible = menuDrop.style.display === 'block';
-                menuDrop.style.display = isVisible ? 'none' : 'block';
-            }
+            if (!toggleEl) return;
+
+            var userArea = toggleEl.closest('.user-area');
+            var menuDrop = userArea ? userArea.querySelector('.user-dropdown-menu') : null;
+            if (!menuDrop) return;
+
+            document.querySelectorAll('.user-dropdown-menu').forEach(function(menu) {
+                if (menu !== menuDrop) {
+                    menu.style.display = 'none';
+                }
+            });
+
+            var isHidden = window.getComputedStyle(menuDrop).display === 'none';
+            menuDrop.style.display = isHidden ? 'block' : 'none';
         }
     </script>
 </head>
@@ -60,7 +77,7 @@
                 </button>
                 {% if user.is_authenticated %}
                 <div class="user-area" style="position: relative; display: flex; align-items: center;">
-                    <div id="userMenuToggle" onclick="toggleUserMenu(event)" style="cursor: pointer; display: flex; align-items: center; gap: 8px; padding: 5px 0;">
+                    <div id="userMenuToggle" onclick="toggleUserMenu(event, this)" style="cursor: pointer; display: flex; align-items: center; gap: 8px; padding: 5px 0;">
                         <img src="{% static 'images/user_icon.png' %}" alt="User" style="width: 26px; height: 26px; object-fit: contain; display: block;">
                         <span class="username-display" style="font-weight: 500; font-size: 15px; color: #333;">{{ user.username }}</span>
                         <i class="fas fa-chevron-down chevron-user" style="font-size: 11px; margin-left: 2px; color: #555;"></i>
@@ -86,12 +103,22 @@
                     </div>
                 </div>
                 {% else %}
-                <div class="auth-area">
-                    <img src="{% static 'images/user_icon.png' %}" alt="User" style="width: 26px; height: 26px; object-fit: contain;">
+                <div class="auth-area user-area guest-user-area" style="position: relative; display: flex; align-items: center;">
+                    <div class="guest-user-toggle" onclick="toggleUserMenu(event, this)" style="cursor: pointer; display: flex; align-items: center; gap: 8px; padding: 5px 0;">
+                        <img src="{% static 'images/user_icon.png' %}" alt="User" style="width: 26px; height: 26px; object-fit: contain;">
+                    </div>
                     <div class="auth-links">
                         <a href="{% url 'login' %}">Đăng nhập</a>
                         <span class="divider">|</span>
                         <a href="{% url 'register' %}">Đăng ký</a>
+                    </div>
+                    <div class="user-dropdown-menu guest-dropdown-menu">
+                        <a href="{% url 'login' %}" class="dropdown-link">
+                            <i class="fas fa-sign-in-alt" style="margin-right: 12px; font-size: 16px; width: 20px; text-align: center;"></i> Đăng nhập
+                        </a>
+                        <a href="{% url 'register' %}" class="dropdown-link">
+                            <i class="fas fa-user-plus" style="margin-right: 12px; font-size: 16px; width: 20px; text-align: center;"></i> Đăng ký
+                        </a>
                     </div>
                 </div>
                 {% endif %}
@@ -120,7 +147,7 @@
     <div class="toast-container" id="toast-container">
         {% if messages %}
             {% for message in messages %}
-            <div class="toast">
+            <div class="toast server-toast">
                 <div class="toast-content" style="padding: 15px 25px; min-width: 330px; display: flex; align-items: center; gap: 10px;">
                     <i class="fas {% if message.tags == 'error' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %}" 
                        style="color: {% if message.tags == 'error' %}#e53935{% else %}#8bc34a{% endif %};"></i>
@@ -331,23 +358,15 @@
     
  <!-- Truncated for brevity, just copying structural parts -->
 
+    <script src="https://unpkg.com/lenis@1.1.20/dist/lenis.min.js"></script>
+    <script>
+        // Initialize Lenis
+        const lenis = new Lenis({
+            autoRaf: true,
+        });
+    </script>
     <script src="{% static 'js/app.js' %}?v=3.2"></script>
     <script>
-        // Set CSRF token for AJAX
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
         const csrftoken = getCookie('csrftoken');
 
         // KIỂM TRA PHIÊN TRÌNH DUYỆT (Heartbeat)
@@ -376,23 +395,25 @@
             }
         });
 
-        // Setup User Dropdown Click Toggle (Khởi tạo trực tiếp và Toàn cục)
-        function toggleUserMenu(e) {
-            if (e) e.stopPropagation();
-            var menuDrop = document.getElementById('userMenuDropdown');
-            if (menuDrop) {
-                var isVisible = menuDrop.style.display === 'block';
-                menuDrop.style.display = isVisible ? 'none' : 'block';
-            }
-        }
-
         // Đóng menu khi click ra ngoài
         document.addEventListener('click', function(e) {
-            var toggleBtn = document.getElementById('userMenuToggle');
-            var menuDrop = document.getElementById('userMenuDropdown');
-            if (toggleBtn && menuDrop && !toggleBtn.contains(e.target) && !menuDrop.contains(e.target)) {
-                menuDrop.style.display = 'none';
-            }
+            document.querySelectorAll('.user-area').forEach(function(area) {
+                var toggleBtn = area.querySelector('#userMenuToggle, .guest-user-toggle');
+                var menuDrop = area.querySelector('.user-dropdown-menu');
+                if (toggleBtn && menuDrop && !toggleBtn.contains(e.target) && !menuDrop.contains(e.target)) {
+                    menuDrop.style.display = 'none';
+                }
+            });
+        });
+
+        // Toast từ Django messages chỉ để hiển thị trạng thái, không được chặn thao tác người dùng.
+        document.querySelectorAll('.server-toast').forEach(function(toastEl) {
+            toastEl.style.pointerEvents = 'none';
+            setTimeout(function() {
+                if (toastEl && toastEl.parentNode) {
+                    toastEl.remove();
+                }
+            }, 2600);
         });
     </script>
     {% block scripts %}{% endblock %}

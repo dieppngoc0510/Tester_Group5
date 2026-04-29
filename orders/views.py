@@ -28,8 +28,26 @@ def get_admin_stats():
 def admin_required(view_func):
     @wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):
+        # Không đủ quyền/đã đăng xuất -> không hiển thị trang admin,
+        # mà chuyển hướng về trang đăng nhập (hoặc trả JSON 401 cho request AJAX/POST).
         if not request.user.is_authenticated or not (request.user.is_staff or request.user.is_superuser):
-            return HttpResponseForbidden("Bạn không có quyền truy cập trang này.")
+            accept = (request.headers.get("Accept") or "").lower()
+            is_ajax = request.headers.get("x-requested-with") == "XMLHttpRequest"
+            expects_json = "application/json" in accept or is_ajax
+            # Một số endpoint admin được gọi bằng fetch và luôn trả JSON.
+            # Khi không đủ quyền, tránh redirect sang trang login (HTML) làm fetch().json() lỗi.
+            json_path_prefixes = (
+                "/panel/api/",
+                "/panel/orders/detail/",
+                "/panel/orders/delete/",
+                "/panel/orders/update-status/",
+            )
+            expects_json_by_path = any(request.path.startswith(p) for p in json_path_prefixes)
+
+            if request.method != "GET" or expects_json or expects_json_by_path:
+                return JsonResponse({"success": False, "error": "Unauthorized"}, status=401)
+
+            return redirect("login")
         return view_func(request, *args, **kwargs)
     return _wrapped_view
 
@@ -267,6 +285,40 @@ def admin_edit_order(request, order_id):
             return JsonResponse({"success": False, "error": "Đơn hàng phải có ít nhất 1 sản phẩm!"})
 
         try:
+            old_items = list(order.items.all())
+            old_qty_map = {}
+            for item in old_items:
+                if item.product_id:
+                    old_qty_map[item.product_id] = old_qty_map.get(item.product_id, 0) + int(item.quantity)
+
+            requested_qty_map = {}
+            for i, pid in enumerate(product_ids):
+                try:
+                    product_id = int(pid)
+                    qty = int(quantities[i]) if i < len(quantities) else 1
+                except (TypeError, ValueError):
+                    return JsonResponse({"success": False, "error": "Số lượng sản phẩm không hợp lệ!"})
+
+                if qty < 1:
+                    return JsonResponse({"success": False, "error": "Số lượng sản phẩm phải lớn hơn 0!"})
+
+                requested_qty_map[product_id] = requested_qty_map.get(product_id, 0) + qty
+
+            stock_errors = []
+            for product_id, requested_qty in requested_qty_map.items():
+                product = get_object_or_404(Product, id=product_id)
+                available_stock = int(product.stock) + int(old_qty_map.get(product_id, 0))
+                if requested_qty > available_stock:
+                    stock_errors.append(
+                        f"{product.name}: yêu cầu {requested_qty}, tồn kho khả dụng {available_stock}"
+                    )
+
+            if stock_errors:
+                return JsonResponse({
+                    "success": False,
+                    "error": "Số lượng vượt tồn kho: " + "; ".join(stock_errors)
+                })
+
             # Update user/profile
             order.user.first_name = fullname
             order.user.save()
@@ -277,7 +329,6 @@ def admin_edit_order(request, order_id):
             profile.save()
 
             # Process items (Clear and re-create)
-            old_items = list(order.items.all())
             for item in old_items:
                 if item.product:
                     item.product.stock += item.quantity

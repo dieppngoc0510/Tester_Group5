@@ -524,7 +524,7 @@
                     <div class="s-form-row">
                         <div class="s-form-label">Số điện thoại</div>
                         <div class="s-form-control">
-                            <input type="text" name="phone" class="s-form-input" value="{{ profile.phone|default_if_none:'' }}" pattern="[0-9]{10}" minlength="10" maxlength="10" title="Số điện thoại phải bao gồm đúng 10 chữ số">
+                            <input type="text" name="phone" class="s-form-input" value="{{ profile.phone|default_if_none:'' }}" pattern="[0-9]{10}" minlength="10" maxlength="10" title="Số điện thoại không hợp lệ">
                         </div>
                     </div>
 
