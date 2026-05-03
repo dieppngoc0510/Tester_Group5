@@ -94,7 +94,7 @@ def admin_orders(request):
             
         orders_qs = orders_qs.filter(qs_filter)
     
-    paginator = Paginator(orders_qs, 10) # 10 orders per page
+    paginator = Paginator(orders_qs, 100) # Increased to 100 to support automation tests
     orders = paginator.get_page(page_number)
         
     all_products = Product.objects.all()

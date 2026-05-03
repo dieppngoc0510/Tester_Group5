@@ -170,20 +170,7 @@
     {% endif %}
 
     <!-- TOASTS -->
-    <div class="toast-container" id="toast-container">
-        {% if messages %}
-            {% for message in messages %}
-            <div class="toast server-toast">
-                <div class="toast-content" style="padding: 15px 25px; min-width: 330px; display: flex; align-items: center; gap: 10px;">
-                    <i class="fas {% if message.tags == 'error' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %}" 
-                       style="color: {% if message.tags == 'error' %}#e53935{% else %}#8bc34a{% endif %};"></i>
-                    <div class="toast-message" style="font-size: 14px;">{{ message }}</div>
-                </div>
-            </div>
-            {% endfor %}
-        {% endif %}
-        
-    </div>
+    <div class="toast-container" id="toast-container">{% if messages %}{% for message in messages %}<div class="toast server-toast"><div class="toast-content" style="padding: 15px 25px; min-width: 330px; display: flex; align-items: center; gap: 10px;"><i class="fas {% if message.tags == 'error' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %}" style="color: {% if message.tags == 'error' %}#e53935{% else %}#8bc34a{% endif %};"></i><div class="toast-message" style="font-size: 14px;">{{ message }}</div></div></div>{% endfor %}{% endif %}</div>
 
     <!-- CART SIDEBAR -->
     <div class="cart-overlay" id="cart-overlay" onclick="closeCart()"></div>

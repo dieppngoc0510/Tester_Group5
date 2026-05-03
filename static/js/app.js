@@ -181,15 +181,11 @@ function updateCartUI() {
         const couponRow = document.getElementById('coupon-toggle-row');
         const couponLabel = document.getElementById('selected-coupon-label');
         if (couponRow) {
-            // CẬP NHẬT TRẠNG THÁI MÃ ƯU ĐÃI THEO VIỆC CHỌN SẢN PHẨM
             const isDisabled = (data.selected_count === 0);
             couponRow.style.opacity = isDisabled ? '0.6' : '1';
             couponRow.style.cursor = isDisabled ? 'not-allowed' : 'pointer';
-            
-            // Bắt buộc về mặc định khi không có SP được chọn hoặc giỏ hàng trống
             if (isDisabled && couponLabel) {
                 const currentLabel = couponLabel.textContent.trim();
-                // Chỉ gọi fetch nếu thực sự có mã đang áp dụng
                 if (currentLabel !== 'Chọn hoặc nhập mã') {
                     couponLabel.textContent = 'Chọn hoặc nhập mã';
                     fetch('/apply-coupon/', {
@@ -200,6 +196,24 @@ function updateCartUI() {
                 }
                 couponLabel.style.color = 'var(--gray-500)';
                 couponLabel.style.fontWeight = '400';
+            }
+        }
+
+        // CẬP NHẬT TRẠNG THÁI NÚT ĐẶT HÀNG
+        const btnCheckout = document.querySelector('.btn-cart-checkout');
+        if (btnCheckout) {
+            const isNoItemSelected = (data.selected_count === 0);
+            if (isNoItemSelected) {
+                btnCheckout.style.opacity = '0.5';
+                btnCheckout.style.cursor = 'not-allowed';
+                btnCheckout.onclick = (e) => {
+                    e.preventDefault();
+                    showToast('info', null, 'Vui lòng chọn ít nhất 1 sản phẩm để đặt hàng!');
+                };
+            } else {
+                btnCheckout.style.opacity = '1';
+                btnCheckout.style.cursor = 'pointer';
+                btnCheckout.onclick = () => { location.href = '/checkout/'; };
             }
         }
     });

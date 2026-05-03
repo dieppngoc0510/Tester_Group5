@@ -864,13 +864,13 @@
                             <td>
                                 <div class="status-dropdown-container" {% if order.status != 'return' %}onclick="toggleStatusDropdown(event, {{ order.id }})"{% endif %}>
                                     {% if order.status == 'shipping' %}
-                                        <span class="ship-status-green">Đang giao</span>
+                                        <span class="ship-status-green status-label">Đang giao</span>
                                     {% elif order.status == 'completed' %}
-                                        <span class="ship-status-gray">Đã giao</span>
+                                        <span class="ship-status-gray status-label">Đã giao</span>
                                     {% elif order.status == 'return' %}
-                                        <span class="ship-status-gray">Đã hủy</span>
+                                        <span class="ship-status-gray status-label">Đã hủy đơn</span>
                                     {% else %}
-                                        <span class="ship-status-gray">Chờ xử lý</span>
+                                        <span class="ship-status-gray status-label">Chờ xử lý</span>
                                     {% endif %}
                                     
                                     {% if order.status != 'return' %}
@@ -938,15 +938,15 @@
                     <input type="hidden" name="user_id" value="{% if users %}{{ users.0.id }}{% else %}1{% endif %}">
                     <div style="position:relative; margin-bottom:12px;">
                         <input type="text" id="cust-name-input" name="fullname" placeholder="Nhập họ và tên" style="margin-bottom:0;" oninput="this.style.borderColor='#cbd5e1'; document.getElementById('err-name').style.display='none';">
-                        <div id="err-name" style="color:#ef4444; font-size:13px; margin-top:5px; display:none;"><i class="fas fa-exclamation-circle"></i> Vui lòng nhập họ và tên khách hàng.</div>
+                        <div id="err-name" class="error-message" style="color:#ef4444; font-size:13px; margin-top:5px; display:none;"><i class="fas fa-exclamation-circle"></i> Vui lòng nhập họ và tên khách hàng.</div>
                     </div>
                     <div style="position:relative; margin-bottom:12px;">
                         <input type="text" id="cust-phone-input" name="phone" placeholder="Nhập số điện thoại" style="margin-bottom:0;" oninput="this.style.borderColor='#cbd5e1'; document.getElementById('err-phone').style.display='none';">
-                        <div id="err-phone" style="color:#ef4444; font-size:13px; margin-top:5px; display:none;"><i class="fas fa-exclamation-circle"></i> Vui lòng nhập số điện thoại hợp lệ (10 số).</div>
+                        <div id="err-phone" class="error-message" style="color:#ef4444; font-size:13px; margin-top:5px; display:none;"><i class="fas fa-exclamation-circle"></i> Vui lòng nhập số điện thoại hợp lệ (10 số).</div>
                     </div>
                     <div style="position:relative;">
                         <input type="text" id="cust-addr-input" name="address" placeholder="Nhập địa chỉ giao hàng" style="margin-bottom:0;" oninput="this.style.borderColor='#cbd5e1'; document.getElementById('err-addr').style.display='none';">
-                        <div id="err-addr" style="color:#ef4444; font-size:13px; margin-top:5px; display:none;"><i class="fas fa-exclamation-circle"></i> Vui lòng nhập địa chỉ giao hàng.</div>
+                        <div id="err-addr" class="error-message" style="color:#ef4444; font-size:13px; margin-top:5px; display:none;"><i class="fas fa-exclamation-circle"></i> Vui lòng nhập địa chỉ giao hàng.</div>
                     </div>
                 </div>
 
@@ -958,7 +958,7 @@
                             <input type="text" id="product-search-input" placeholder="Tìm sản phẩm..." oninput="handleProductSearch(this.value)" autocomplete="off">
                             <i class="fas fa-search"></i>
                         </div>
-                        <button type="button" class="btn-create-add" onclick="addItemFallback()"><i class="fas fa-plus"></i></button>
+                        <button type="button" class="btn-create-add btn-add-more" onclick="addItemFallback()"><i class="fas fa-plus"></i></button>
                         
                         <div id="product-search-results" style="display:none; position:absolute; top:100%; left:0; width:calc(100% - 59px); background:#fff; border:1px solid #cbd5e1; border-radius:4px; max-height:200px; overflow-y:auto; z-index:10; margin-top:5px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
                             <!-- Dropdown options injected by JS -->
@@ -991,7 +991,7 @@
                             <!-- JS Will append here -->
                         </tbody>
                     </table>
-                    <div id="err-products" style="color:#ef4444; font-size:13px; margin-top:10px; margin-bottom:10px; display:none;"><i class="fas fa-exclamation-circle"></i> Vui lòng thêm ít nhất một sản phẩm vào đơn hàng để tiếp tục.</div>
+                    <div id="err-products" class="error-message" style="color:#ef4444; font-size:13px; margin-top:10px; margin-bottom:10px; display:none;"><i class="fas fa-exclamation-circle"></i> Vui lòng thêm ít nhất một sản phẩm vào đơn hàng để tiếp tục.</div>
                 </div>
 
                 <!-- Phương thức thanh toán -->
@@ -1034,8 +1034,8 @@
                 </div>
 
                 <div style="display: flex; gap: 15px;">
-                    <button type="button" class="mockup-btn-secondary" onclick="closeModal('create-order-modal')" style="background: white; border: 1px solid #cbd5e1; color: #000; font-weight: 600; padding: 12px 25px;">Huỷ</button>
-                    <button type="submit" class="mockup-btn-primary" style="background: #1890ff; padding: 12px 25px; font-weight: 600;">Tạo đơn mới</button>
+                    <button type="button" class="mockup-btn-secondary btn-cancel-order" onclick="closeModal('create-order-modal')" style="background: white; border: 1px solid #cbd5e1; color: #000; font-weight: 600; padding: 12px 25px;">Huỷ</button>
+                    <button type="submit" class="mockup-btn-primary btn-submit-order" style="background: #1890ff; padding: 12px 25px; font-weight: 600;">Tạo đơn mới</button>
                 </div>
 
             </div>
@@ -1133,10 +1133,10 @@
     </div>
 </div>
 <div id="delete-order-modal" class="modal-overlay">
-    <div style="background:white; width:450px; border-radius:16px; padding:0; overflow:hidden; position:relative; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);">
+    <div class="modal-content" style="background:white; width:450px; border-radius:16px; padding:0; overflow:hidden; position:relative; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);">
         <div style="padding: 25px 25px 15px; position:relative;">
-            <button onclick="closeModal('delete-order-modal')" style="position:absolute; top:15px; right:15px; background:none; border:none; font-size:20px; cursor:pointer; color:#1e293b;"><i class="fas fa-times"></i></button>
-            <div style="display:flex; gap:15px; margin-bottom:10px;">
+            <button class="close" onclick="closeModal('delete-order-modal')" style="position:absolute; top:15px; right:15px; background:none; border:none; font-size:20px; cursor:pointer; color:#1e293b;"><i class="fas fa-times"></i></button>
+            <div class="modal-body" style="display:flex; gap:15px; margin-bottom:10px;">
                 <div style="color:#ef4444; font-size:28px; margin-top:2px;"><i class="fas fa-exclamation-triangle"></i></div>
                 <div style="text-align: left;">
                     <h3 style="margin:0; font-size:18px; color:#1e293b; font-weight:700; margin-bottom:10px;">Xác nhận xoá đơn hàng</h3>
@@ -1145,7 +1145,7 @@
             </div>
         </div>
         <div style="padding: 15px 25px; border-top: 1px solid #e2e8f0; display:flex; justify-content:center; gap:12px;">
-            <button onclick="closeModal('delete-order-modal')" style="padding: 10px 25px; background:#f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; color:#1e293b; font-weight:600; cursor:pointer;">Huỷ</button>
+            <button class="btn-secondary" onclick="closeModal('delete-order-modal')" style="padding: 10px 25px; background:#f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; color:#1e293b; font-weight:600; cursor:pointer;">Huỷ</button>
             <button id="del-btn-confirm" onclick="executeDeleteOrder(this)" style="padding: 10px 25px; background:#ef4444; border:none; border-radius: 8px; color:white; font-weight:600; cursor:pointer;">Xoá</button>
         </div>
     </div>
@@ -1207,6 +1207,10 @@
         document.getElementById('txt-total').innerText = total.toLocaleString() + ' đ';
     }
 
+    function removeAccents(str) {
+        return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
+    }
+
     const availableProducts = [
         {% for p in products %}
         { id: {{ p.id }}, name: "{{ p.name|escapejs }}", price: {{ p.price }}, stock: {{ p.stock|default:0 }} },
@@ -1220,13 +1224,13 @@
             return;
         }
         
-        let q = query.toLowerCase();
-        let matches = availableProducts.filter(p => p.name.toLowerCase().includes(q));
+        let q = removeAccents(query.toLowerCase());
+        let matches = availableProducts.filter(p => removeAccents(p.name.toLowerCase()).includes(q));
         
         if (matches.length > 0) {
             let html = '';
             matches.forEach(p => {
-                html += `<div style="padding: 10px 15px; cursor:pointer; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center;" onclick="selectProductToAdd(${p.id}, '${p.name}', ${p.price})" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+                html += `<div class="product-result-item" style="padding: 10px 15px; cursor:pointer; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center;" onclick="selectProductToAdd(${p.id}, '${p.name.replace(/'/g, "\\'")}', ${p.price})" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
                     <span style="color:#1e293b; font-weight:600; font-size:14px;">${p.name}</span>
                     <span style="color:#ef4444; font-weight:700; font-size:14px;">${p.price.toLocaleString()} đ</span>
                 </div>`;
@@ -1254,8 +1258,8 @@
     function addItemFallback() {
         let query = document.getElementById('product-search-input').value.trim();
         if (query) {
-            let q = query.toLowerCase();
-            let matches = availableProducts.filter(p => p.name.toLowerCase().includes(q));
+            let q = removeAccents(query.toLowerCase());
+            let matches = availableProducts.filter(p => removeAccents(p.name.toLowerCase()).includes(q));
             if (matches.length > 0) {
                 selectProductToAdd(matches[0].id, matches[0].name, matches[0].price);
                 return;
@@ -1362,7 +1366,7 @@
             isValid = false;
         }
 
-        let phoneRegex = /^(03|05|07|08|09|01[2|6|8|9])+([0-9]{8})\b/;
+        let phoneRegex = /^(03|05|07|08|09|01[2|6|8|9])[0-9]{8}$/;
         if (!phone || !phoneRegex.test(phone)) {
             phoneInput.style.borderColor = '#ef4444';
             document.getElementById('err-phone').style.display = 'block';
