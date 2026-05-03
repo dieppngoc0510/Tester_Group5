@@ -660,8 +660,15 @@ def confirm_order(request):
         subtotal = sum(i['price'] * i['qty'] for i in selected_items)
         order_items_data = []
         for i in selected_items:
+            product_obj = Product.objects.get(id=i['product_id'])
+            
+            # Kiểm tra tồn kho trước khi tạo đơn
+            if product_obj.stock < i['qty']:
+                messages.error(request, f"Sản phẩm '{product_obj.name}' hiện đã hết hàng. Vui lòng cập nhật lại giỏ hàng.")
+                return redirect('checkout')
+
             order_items_data.append({
-                'product_obj': Product.objects.get(id=i['product_id']),
+                'product_obj': product_obj,
                 'name': i['name'], 'color': i['color'], 'size': i['size'],
                 'qty': i['qty'], 'price': i['price']
             })
@@ -863,7 +870,28 @@ def profile(request):
         
     # Get or create UserProfile
     user_profile, created = UserProfile.objects.get_or_create(user=request.user)
-    
+
+    def _render_profile(request, user_profile, extra_context=None):
+        """Helper: render profile page với dữ liệu hiện tại từ DB."""
+        birthdate = ""
+        if user_profile.birthdate:
+            birthdate = user_profile.birthdate.strftime('%Y-%m-%d')
+        else:
+            birthdate = "2005-02-08"
+        gender = user_profile.gender if user_profile.gender else 'nu'
+        address = user_profile.address if user_profile.address else ''
+        ctx = {
+            'user': request.user,
+            'profile': user_profile,
+            'birthdate': birthdate,
+            'gender': gender,
+            'address': address,
+            'cart_count': sum(item['qty'] for item in request.session.get('cart', []))
+        }
+        if extra_context:
+            ctx.update(extra_context)
+        return render(request, 'reviews/profile.html', ctx)
+
     if request.method == 'POST':
         first_name = request.POST.get('first_name', '').strip()
         email = request.POST.get('email', '').strip()
@@ -872,74 +900,54 @@ def profile(request):
         address = request.POST.get('address', '').strip()
         gender = request.POST.get('gender', '').strip()
 
+        # ── Validation ────────────────────────────────────
         if not first_name:
             messages.error(request, 'Họ và tên không được để trống')
-            return redirect('profile')
-        
-        if not email:
-            messages.error(request, 'Email không được để trống')
-            return redirect('profile')
+            return _render_profile(request, user_profile,
+                                   {'form_error': 'Họ và tên không được để trống'})
 
+        # Kiểm tra định dạng email ở server-side
+        from django.core.validators import validate_email
+        from django.core.exceptions import ValidationError
+        try:
+            validate_email(email)
+        except ValidationError:
+            err = 'Email không đúng định dạng hoặc không hợp lệ!'
+            messages.error(request, err)
+            return _render_profile(request, user_profile, {'form_error': err})
+
+        # Kiểm tra email đã tồn tại
         if User.objects.filter(email=email).exclude(id=request.user.id).exists():
-            messages.error(request, 'Email này đã được sử dụng bởi tài khoản khác')
-            return redirect('profile')
-        
-        if not phone:
-            messages.error(request, 'Số điện thoại không được để trống')
-            return redirect('profile')
+            err = 'Email này đã được sử dụng bởi tài khoản khác'
+            messages.error(request, err)
+            return _render_profile(request, user_profile, {'form_error': err})
 
-        if len(phone) != 10 or not phone.isdigit():
-            messages.error(request, 'Số điện thoại phải bao gồm đúng 10 chữ số!')
-            return redirect('profile')
+        # Kiểm tra SĐT: chỉ chấp nhận đúng 10 chữ số (nếu có nhập)
+        import re as _re
+        if phone and not _re.fullmatch(r'\d{10}', phone):
+            err = 'Số điện thoại không hợp lệ! Phải bao gồm đúng 10 chữ số.'
+            messages.error(request, err)
+            return _render_profile(request, user_profile, {'form_error': err})
 
-        if not birthdate:
-            messages.error(request, 'Ngày sinh không được để trống')
-            return redirect('profile')
-
-        if not address:
-            messages.error(request, 'Địa chỉ không được để trống')
-            return redirect('profile')
-
-        if not gender:
-            messages.error(request, 'Giới tính không được để trống')
-            return redirect('profile')
-            
-
-        # Cập nhật thông tin cốt lõi vào Database
+        # ── Lưu vào Database ──────────────────────────────
         request.user.first_name = first_name
         request.user.email = email
         request.user.save()
 
-        # Lưu các trường bổ sung vào UserProfile DB
         user_profile.phone = phone
         user_profile.address = address
-        if birthdate: 
+        if birthdate:
             user_profile.birthdate = birthdate
         else:
             user_profile.birthdate = None
         user_profile.gender = gender
         user_profile.save()
-        
+
         messages.success(request, 'Cập nhật thông tin hồ sơ thành công!')
         return redirect('profile')
 
-    # Xử lý GET request (Hiển thị từ DB)
-    birthdate = ""
-    if user_profile.birthdate:
-        birthdate = user_profile.birthdate.strftime('%Y-%m-%d')
-    else:
-        birthdate = "2005-02-08" # Ngày mặc định tạm hiển thị
-    gender = user_profile.gender if user_profile.gender else 'nu'
-    address = user_profile.address if user_profile.address else ''
-    
-    return render(request, 'reviews/profile.html', {
-        'user': request.user,
-        'profile': user_profile,
-        'birthdate': birthdate,
-        'gender': gender,
-        'address': address,
-        'cart_count': sum(item['qty'] for item in request.session.get('cart', []))
-    })
+    # GET request
+    return _render_profile(request, user_profile)
 
 def orders(request):
     if not request.user.is_authenticated:
@@ -961,56 +969,62 @@ def orders(request):
 def change_password(request):
     if not request.user.is_authenticated:
         return redirect('login')
-        
+
+    def _render_change_pw(request, form_error=None):
+        """Helper: render trang đổi mật khẩu với lỗi inline."""
+        return render(request, 'reviews/change_password.html', {
+            'user': request.user,
+            'form_error': form_error,
+            'cart_count': sum(item['qty'] for item in request.session.get('cart', []))
+        })
+
     if request.method == 'POST':
         current_password = request.POST.get('current_password', '')
         new_password = request.POST.get('new_password', '')
         confirm_password = request.POST.get('confirm_password', '')
 
-        has_error = False
-        if not current_password:
-            messages.error(request, 'Vui lòng nhập mật khẩu hiện tại')
-            has_error = True
-        if not new_password:
-            messages.error(request, 'Vui lòng nhập mật khẩu mới')
-            has_error = True
-        if not confirm_password:
-            messages.error(request, 'Vui lòng xác nhận mật khẩu mới')
-            has_error = True
-        if has_error:
-            return redirect('change_password')
-        
+        # Kiểm tra trường bắt buộc
+        if not current_password or not new_password or not confirm_password:
+            err = 'Vui lòng nhập đầy đủ tất cả các trường!'
+            messages.error(request, err)
+            return _render_change_pw(request, err)
+
         # Kiểm tra mật khẩu hiện tại
         if not request.user.check_password(current_password):
-            messages.error(request, 'Mật khẩu hiện tại không đúng.')
-            return redirect('change_password')
-            
+            err = 'Mật khẩu hiện tại không đúng.'
+            messages.error(request, err)
+            return _render_change_pw(request, err)
+
         # Kiểm tra mật khẩu mới khớp nhau
         if new_password != confirm_password:
-            messages.error(request, 'Mật khẩu mới không khớp nhau.')
-            return redirect('change_password')
-            
-        if len(new_password) < 6:
-            messages.error(request, 'Mật khẩu mới phải có ít nhất 6 ký tự.')
-            return redirect('change_password')
-        
+            err = 'Mật khẩu xác nhận không khớp nhau.'
+            messages.error(request, err)
+            return _render_change_pw(request, err)
+
+        # Kiểm tra độ dài tối thiểu (ít nhất 8 ký tự)
+        if len(new_password) < 8:
+            err = 'Mật khẩu mới phải có ít nhất 8 ký tự!'
+            messages.error(request, err)
+            return _render_change_pw(request, err)
+
+        # Kiểm tra mật khẩu mới không được trùng cũ
         if request.user.check_password(new_password):
-            messages.error(request, 'Mật khẩu mới không được trùng mật khẩu hiện tại')
-            return redirect('change_password')
+            err = 'Mật khẩu mới không được trùng mật khẩu hiện tại!'
+            messages.error(request, err)
+            return _render_change_pw(request, err)
 
         # Thực hiện đổi mật khẩu
         request.user.set_password(new_password)
         request.user.save()
-        
+
         # Bắt buộc đăng nhập lại bằng mật khẩu mới
         auth_logout(request)
         messages.success(request, 'Cập nhật mật khẩu thành công!')
         return redirect('login')
-        
-    return render(request, 'reviews/change_password.html', {
-        'user': request.user,
-        'cart_count': sum(item['qty'] for item in request.session.get('cart', []))
-    })
+
+    return _render_change_pw(request)
+
+
 
 
 from django.db.models import Q

@@ -316,10 +316,10 @@ function showToast(type, product = null, message = '') {
     const toastElement = div.firstElementChild;
     container.appendChild(toastElement);
     
-    // Auto remove after 2.5s
+    // Auto remove after 4s
     setTimeout(() => { 
         if(container.contains(toastElement)) toastElement.remove(); 
-    }, 2500);
+    }, 4000);
 }
 
 

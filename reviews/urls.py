@@ -11,6 +11,8 @@ urlpatterns = [
     path('api/', include(router.urls)),
     path('api/login', api_views.Login.as_view(), name='api_login'),
     path('api/logout', api_views.Logout.as_view(), name='api_logout'),
+    path('api/user/profile/', api_views.UserProfileAPI.as_view(), name='api_user_profile'),
+    path('api/user/change-password/', api_views.ChangePasswordAPI.as_view(), name='api_change_password'),
     path('', views.home, name='home'),
     path('products/', views.all_products, name='all_products'),
     path('products/<str:category>/', views.all_products, name='all_products_cat'),

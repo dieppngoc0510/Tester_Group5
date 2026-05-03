@@ -5,6 +5,24 @@
 
 {% block content %}
 <style>
+    /* ── Error banner shown when server-side validation fails ── */
+    .profile-error-banner {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #fff2f0;
+        border: 1px solid #ffccc7;
+        border-radius: 4px;
+        color: #cf1322;
+        font-size: 13px;
+        padding: 10px 14px;
+        margin: 8px 0 16px 25%;
+        animation: fadeInDown 0.3s ease;
+    }
+    @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-6px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
     /* Reset and set exact styling for the profile section */
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
 
@@ -446,6 +464,7 @@
     }
 </style>
 
+
 <div class="shopee-wrapper">
     <div class="shopee-container">
         
@@ -500,7 +519,8 @@
             <div class="shopee-main-body">
                 
                 <!-- Left Form -->
-                <form method="POST" action="{% url 'profile' %}" class="shopee-form-section">
+                <form method="POST" action="{% url 'profile' %}" class="shopee-form-section" novalidate>
+                    <input type="hidden" id="form-status" value="{% if form_error %}error{% else %}idle{% endif %}">
                     {% csrf_token %}
                     <div class="s-form-row">
                         <div class="s-form-label">Tên đăng nhập</div>
@@ -517,16 +537,26 @@
                     <div class="s-form-row">
                         <div class="s-form-label">Email</div>
                         <div class="s-form-control">
-                            <input type="email" name="email" class="s-form-input" value="{{ user.email }}">
+                            <input type="email" name="email" id="profile-email" class="s-form-input" value="{{ user.email }}">
                         </div>
                     </div>
 
                     <div class="s-form-row">
                         <div class="s-form-label">Số điện thoại</div>
                         <div class="s-form-control">
-                            <input type="text" name="phone" class="s-form-input" value="{{ profile.phone|default_if_none:'' }}" pattern="[0-9]{10}" minlength="10" maxlength="10" title="Số điện thoại không hợp lệ">
+                            <input type="text" name="phone" id="profile-phone" class="s-form-input"
+                                   pattern="[0-9]{10}" maxlength="10" minlength="10"
+                                   title="Số điện thoại phải bao gồm đúng 10 chữ số"
+                                   value="{{ profile.phone|default_if_none:'' }}">
                         </div>
                     </div>
+
+                    {% if form_error %}
+                    <div id="profile-error-msg" class="profile-error-banner" role="alert">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span id="profile-error-text">{{ form_error }}</span>
+                    </div>
+                    {% endif %}
 
                     <div class="s-form-row">
                         <div class="s-form-label">Ngày sinh</div>
